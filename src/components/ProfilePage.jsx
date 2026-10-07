@@ -45,7 +45,6 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
         <div className="lux-hero-bg" style={{ backgroundImage: heroLoaded ? `url(${profile.cover})` : 'none' }} />
         {!heroLoaded && <div className="skeleton shimmer" style={{ position: 'absolute', inset: 0 }} />}
         <div className="lux-hero-grad" />
-        <button className="lux-back" onClick={onBack} aria-label="返回">‹</button>
         {profile.verified && <div className="lux-verify">✓ Verified</div>}
         <div className="lux-hero-meta">
           <div className="lux-occ">{profile.occupation}</div>
