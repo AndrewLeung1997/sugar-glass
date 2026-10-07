@@ -89,7 +89,7 @@ body {
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }
 .card { overflow: hidden; cursor: pointer; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
 .card:hover { transform: translateY(-8px) scale(1.015); }
-.card .photo { height: 320px; background-size: cover; background-position: center; position: relative; }
+.card .photo { height: 320px; background-size: cover; background-position: center top; position: relative; }
 .card .photo::after {
   content: ''; position: absolute; inset: 0;
   background: linear-gradient(to top, rgba(40,20,60,0.55), transparent 55%);
