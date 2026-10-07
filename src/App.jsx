@@ -8,6 +8,7 @@ import { useFavorites } from './hooks/useFavorites.js'
 const PAGE_SIZE = 12
 
 export default function App() {
+  // ===== 所有 useState / useRef 必須喺任何 early return 之前 =====
   const [view, setView] = useState('home')          // home | favorites | member
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')
@@ -16,6 +17,21 @@ export default function App() {
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
   const loadingRef = useRef(false)
+
+  // 列表資料（唔係 hook，但放喺 return 之前計算）
+  const source = view === 'favorites'
+    ? PROFILES.filter(p => favorites.has(p.id))
+    : (filter === '全部' ? PROFILES : PROFILES.filter(p => p.stats.lifestyle === filter))
+  const items = source.slice(0, visibleCount)
+  const hasMore = visibleCount < source.length
+
+  // ===== 所有 useCallback / useEffect =====
+  const loadMore = useCallback(() => {
+    if (loadingRef.current || !hasMore) return
+    loadingRef.current = true
+    setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
+    setTimeout(() => { loadingRef.current = false }, 200)
+  }, [hasMore, source.length])
 
   // 進入/離開詳情頁時捲返頂部 + 重設載入數
   useEffect(() => {
@@ -30,7 +46,21 @@ export default function App() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // IntersectionObserver — sentinel 進入視窗就載入更多
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) loadMore()
+    }, { rootMargin: '300px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [loadMore])
+
   const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
+  const switchView = (v) => { setView(v); setSelected(null); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
+
+  // ===== early returns（喺所有 hooks 之後）=====
 
   // 詳情頁 — 任何 view 都可以進入
   if (selected) {
@@ -43,7 +73,7 @@ export default function App() {
           </div>
           <ProfilePage profile={selected} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
         </div>
-        <BottomBar view={view} onChange={setView} />
+        <BottomBar view={view} onChange={switchView} />
       </div>
     )
   }
@@ -79,38 +109,12 @@ export default function App() {
             </div>
           </div>
         </div>
-        <BottomBar view={view} onChange={setView} />
+        <BottomBar view={view} onChange={switchView} />
       </div>
     )
   }
 
-  // 主頁 / 我的收藏 共用列表邏輯
-  const source = view === 'favorites'
-    ? PROFILES.filter(p => favorites.has(p.id))
-    : (filter === '全部' ? PROFILES : PROFILES.filter(p => p.stats.lifestyle === filter))
-
-  const items = source.slice(0, visibleCount)
-  const hasMore = visibleCount < source.length
-
-  // 載入更多
-  const loadMore = useCallback(() => {
-    if (loadingRef.current || !hasMore) return
-    loadingRef.current = true
-    setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
-    setTimeout(() => { loadingRef.current = false }, 200)
-  }, [hasMore, source.length])
-
-  // IntersectionObserver — sentinel 進入視窗就載入更多
-  useEffect(() => {
-    const el = sentinelRef.current
-    if (!el) return
-    const io = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) loadMore()
-    }, { rootMargin: '300px' })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [loadMore])
-
+  // ===== 主頁 / 我的收藏 =====
   return (
     <div className="app">
       <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
@@ -163,7 +167,7 @@ export default function App() {
         )}
       </div>
 
-      <BottomBar view={view} onChange={(v) => { setView(v); setSelected(null); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }} />
+      <BottomBar view={view} onChange={switchView} />
     </div>
   )
 }
