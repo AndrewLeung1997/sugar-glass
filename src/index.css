@@ -60,7 +60,13 @@ body {
   border-bottom: 1px solid var(--glass-border);
   padding-top: env(safe-area-inset-top);
 }
-.header-inner { max-width: 1180px; margin: 0 auto; padding: 18px 22px 14px; }
+/* 狀態欄區域加淡暗漤層，令 black-translucent 白色狀態欄文字可讀 */
+.header-sticky::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: env(safe-area-inset-top);
+  background: linear-gradient(to bottom, rgba(60, 30, 80, 0.28), rgba(60, 30, 80, 0.06));
+  pointer-events: none; z-index: 0;
+}
+.header-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 18px 22px 14px; }
 
 /* 頂部 */
 .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
