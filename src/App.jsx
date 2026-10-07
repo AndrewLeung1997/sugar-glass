@@ -15,6 +15,7 @@ export default function App() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)  // infinite scroll 已載入數量
   const [scrolled, setScrolled] = useState(false)    // iOS large title 收縮狀態
   const [isLoading, setIsLoading] = useState(false) // infinite scroll 載入中
+  const [closing, setClosing] = useState(false)     // 詳情頁退出動畫
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
 
@@ -55,7 +56,13 @@ export default function App() {
   }, [hasMore, source.length, visibleCount])
 
   const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
-  const switchView = (v) => { setView(v); setSelected(null); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
+  const switchView = (v) => { setView(v); setSelected(null); setClosing(false); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
+
+  const openProfile = (p) => { setClosing(false); setSelected(p) }
+  const closeProfile = () => {
+    setClosing(true)
+    setTimeout(() => { setSelected(null); setClosing(false) }, 340)
+  }
 
   // ===== early returns（喺所有 hooks 之後）=====
 
@@ -64,11 +71,11 @@ export default function App() {
     return (
       <div className="app">
         <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
-        <div className="app-inner app-with-bar">
-          <div className="back glass" onClick={() => setSelected(null)}>
+        <div className={`app-inner app-with-bar detail-pop ${closing ? 'detail-pop-out' : ''}`}>
+          <div className="back glass" onClick={closeProfile}>
             ← 返回
           </div>
-          <ProfilePage profile={selected} isFavorite={isFavorite} onToggleFav={toggleFavorite} onBack={() => setSelected(null)} />
+          <ProfilePage profile={selected} isFavorite={isFavorite} onToggleFav={toggleFavorite} onBack={closeProfile} />
         </div>
         <BottomBar view={view} onChange={switchView} />
       </div>
@@ -152,7 +159,7 @@ export default function App() {
           <>
             <div className="grid">
               {items.map(p => (
-                <ProfileCard key={p.id} profile={p} onOpen={() => setSelected(p)} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
+                <ProfileCard key={p.id} profile={p} onOpen={() => openProfile(p)} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
               ))}
             </div>
 

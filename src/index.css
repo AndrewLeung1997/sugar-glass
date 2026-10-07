@@ -138,6 +138,24 @@ body {
 
 /* 列表卡片 */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }
+
+/* 詳情頁 popup 動畫 */
+.detail-pop {
+  animation: detailPopIn .36s cubic-bezier(.2,.85,.25,1) both;
+  transform-origin: center top;
+  will-change: transform, opacity;
+}
+.detail-pop-out {
+  animation: detailPopOut .34s cubic-bezier(.3,.7,.3,1) both;
+}
+@keyframes detailPopIn {
+  0%   { opacity: 0; transform: scale(.92) translateY(16px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes detailPopOut {
+  0%   { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(.94) translateY(10px); }
+}
 .card { overflow: hidden; cursor: pointer; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
 .card:hover { transform: translateY(-8px) scale(1.015); }
 .card .photo { height: 320px; background-size: cover; background-position: center top; position: relative; }
