@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { PROFILES, FILTERS } from './data.js'
 import ProfileCard from './components/ProfileCard.jsx'
 import ProfilePage from './components/ProfilePage.jsx'
@@ -16,7 +16,6 @@ export default function App() {
   const [scrolled, setScrolled] = useState(false)    // iOS large title 收縮狀態
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
-  const loadingRef = useRef(false)
 
   // 列表資料（唔係 hook，但放喺 return 之前計算）
   const source = view === 'favorites'
@@ -24,14 +23,6 @@ export default function App() {
     : (filter === '全部' ? PROFILES : PROFILES.filter(p => p.stats.lifestyle === filter))
   const items = source.slice(0, visibleCount)
   const hasMore = visibleCount < source.length
-
-  // ===== 所有 useCallback / useEffect =====
-  const loadMore = useCallback(() => {
-    if (loadingRef.current || !hasMore) return
-    loadingRef.current = true
-    setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
-    setTimeout(() => { loadingRef.current = false }, 200)
-  }, [hasMore, source.length])
 
   // 進入/離開詳情頁時捲返頂部 + 重設載入數
   useEffect(() => {
@@ -47,15 +38,18 @@ export default function App() {
   }, [])
 
   // IntersectionObserver — sentinel 進入視窗就載入更多
+  // dep 含 visibleCount：每次載入後重新 observe，等 observer 重新評估交集狀態（解決卡喺「載入中」）
   useEffect(() => {
     const el = sentinelRef.current
-    if (!el) return
+    if (!el || !hasMore) return
     const io = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) loadMore()
+      if (entries[0].isIntersecting) {
+        setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
+      }
     }, { rootMargin: '300px' })
     io.observe(el)
     return () => io.disconnect()
-  }, [loadMore])
+  }, [hasMore, source.length, visibleCount])
 
   const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
   const switchView = (v) => { setView(v); setSelected(null); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
