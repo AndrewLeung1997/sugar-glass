@@ -45,7 +45,7 @@ export default function App() {
   }, [])
 
   // IntersectionObserver — sentinel 進入視窗就載入更多
-  // dep 含 visibleCount：每次載入後重新 observe，等 observer 重新評估交集狀態（解決卡喺「載入中」）
+  // dep 含 visibleCount + selected：返回詳情頁時重新 observe 新 sentinel（舊元素已 unmount）
   useEffect(() => {
     const el = sentinelRef.current
     if (!el || !hasMore) return
@@ -58,7 +58,7 @@ export default function App() {
     }, { rootMargin: '300px' })
     io.observe(el)
     return () => io.disconnect()
-  }, [hasMore, source.length, visibleCount])
+  }, [hasMore, source.length, visibleCount, selected])
 
   const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
   const switchView = (v) => { setView(v); setSelected(null); setClosing(false); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
