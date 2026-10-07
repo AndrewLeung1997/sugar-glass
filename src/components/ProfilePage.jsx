@@ -1,7 +1,19 @@
 import { useState, useEffect } from 'react'
+import { useImageLoaded } from '../hooks/useImageLoaded.js'
+
+function GalleryShot({ src, onOpen }) {
+  const loaded = useImageLoaded(src)
+  return (
+    <div className="shot" style={{ backgroundImage: loaded ? `url(${src})` : 'none' }} onClick={onOpen}>
+      {!loaded && <div className="skeleton shimmer" />}
+      <div className="zoom-hint">⤢</div>
+    </div>
+  )
+}
 
 export default function ProfilePage({ profile }) {
-  const [lightbox, setLightbox] = useState(null) // index of opened photo, or null
+  const [lightbox, setLightbox] = useState(null)
+  const heroLoaded = useImageLoaded(profile.cover)
 
   const open = (i) => setLightbox(i)
   const close = () => setLightbox(null)
@@ -28,7 +40,8 @@ export default function ProfilePage({ profile }) {
     <div className="detail">
       {/* 大圖 hero — 圓角卡片風，名字 + 職業 overlay */}
       <div className="hero glass">
-        <div className="bg" style={{ backgroundImage: `url(${profile.cover})` }} />
+        <div className="bg" style={{ backgroundImage: heroLoaded ? `url(${profile.cover})` : 'none', backgroundPosition: 'center 25%' }} />
+        {!heroLoaded && <div className="skeleton shimmer hero-skel" />}
         {profile.verified && <div className="verify">✓ 已認證</div>}
         <div className="meta">
           <div className="occ-pill">{profile.occupation}</div>
@@ -46,7 +59,7 @@ export default function ProfilePage({ profile }) {
         </div>
       </div>
 
-      {/* 相片 — 橫向卷軸，可點擊放大 */}
+      {/* 相片 — 網格排列，可點擊放大 */}
       <div className="gallery glass">
         <div className="gallery-title">
           <h3>相片</h3>
@@ -54,14 +67,7 @@ export default function ProfilePage({ profile }) {
         </div>
         <div className="scroller">
           {profile.photos.map((p, i) => (
-            <div
-              key={i}
-              className="shot"
-              style={{ backgroundImage: `url(${p})` }}
-              onClick={() => open(i)}
-            >
-              <div className="zoom-hint">⤢</div>
-            </div>
+            <GalleryShot key={i} src={p} onOpen={() => open(i)} />
           ))}
         </div>
       </div>

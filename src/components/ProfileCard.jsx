@@ -1,7 +1,12 @@
+import { useImageLoaded } from '../hooks/useImageLoaded.js'
+
 export default function ProfileCard({ profile, onOpen }) {
+  const loaded = useImageLoaded(profile.cover)
+
   return (
     <div className="card glass" onClick={onOpen}>
-      <div className="photo" style={{ backgroundImage: `url(${profile.cover})` }}>
+      <div className="photo" style={{ backgroundImage: loaded ? `url(${profile.cover})` : 'none' }}>
+        {!loaded && <div className="skeleton shimmer" />}
         {profile.verified && <div className="badge">✓ 已認證</div>}
       </div>
       <div className="info">

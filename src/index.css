@@ -194,6 +194,16 @@ body {
 
 .empty { text-align: center; padding: 80px 20px; color: var(--text-soft); }
 
+/* Skeleton 閃爍佔位 */
+.skeleton { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+.skeleton.shimmer {
+  background: linear-gradient(100deg, rgba(220,205,235,0.35) 30%, rgba(255,255,255,0.55) 50%, rgba(220,205,235,0.35) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.hero-skel { border-radius: var(--radius); }
+
 /* Pagination */
 .pager { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 38px; }
 .pager .count { font-size: 13px; color: var(--text-soft); letter-spacing: 0.5px; }
