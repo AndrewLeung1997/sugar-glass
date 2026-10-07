@@ -233,11 +233,11 @@ body {
 .detail-lux { max-width: 860px; margin: 0 auto; }
 
 /* 全屏大圖 hero */
-.lux-hero { position: relative; width: 100%; height: 78vh; min-height: 480px; max-height: 680px; overflow: hidden; border-radius: 24px; margin-top: 4px; box-shadow: 0 12px 40px rgba(40,20,60,0.18); }
+.lux-hero { position: relative; width: 100%; height: 78vh; min-height: 480px; max-height: 680px; overflow: hidden; border-radius: 24px 24px 0 0; margin-top: 4px; box-shadow: 0 12px 40px rgba(40,20,60,0.18); }
 .lux-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 22%; filter: saturate(1.05); }
 .lux-hero-grad {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(20,12,28,0.78) 0%, rgba(20,12,28,0.18) 38%, transparent 62%),
+  background: linear-gradient(to top, #140c1c 0%, rgba(20,12,28,0.55) 28%, rgba(20,12,28,0.08) 55%, transparent 75%),
               linear-gradient(to bottom, rgba(20,12,28,0.32), transparent 30%);
 }
 .lux-back {
@@ -259,15 +259,17 @@ body {
 .lux-name .lux-age { font-weight: 400; font-style: italic; opacity: 0.8; font-size: 36px; }
 .lux-loc { margin-top: 12px; font-size: 14px; letter-spacing: 0.5px; opacity: 0.88; font-weight: 300; }
 
-/* 統計條 */
+/* 統計條 — 與大圖融合 */
 .lux-stats {
   display: flex; align-items: center; justify-content: center; gap: 0; padding: 26px 32px;
-  background: rgba(255,255,255,0.5); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(184,147,90,0.18);
+  background: #140c1c; border-radius: 0 0 24px 24px;
+  border-bottom: 1px solid rgba(184,147,90,0.18); border-left: 1px solid rgba(184,147,90,0.12); border-right: 1px solid rgba(184,147,90,0.12);
+  box-shadow: 0 12px 40px rgba(40,20,60,0.18);
 }
 .lux-stat { text-align: center; padding: 0 28px; }
-.lux-stat b { display: block; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--text); }
-.lux-stat small { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-soft); margin-top: 4px; display: block; }
-.lux-div { width: 1px; height: 36px; background: rgba(184,147,90,0.3); }
+.lux-stat b { display: block; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: #fff; }
+.lux-stat small { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-soft); margin-top: 4px; display: block; }
+.lux-div { width: 1px; height: 36px; background: rgba(184,147,90,0.35); }
 
 /* 區段標題 */
 .lux-h { display: flex; align-items: center; gap: 14px; font-family: 'Playfair Display', serif; font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; font-weight: 600; }
