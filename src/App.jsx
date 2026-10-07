@@ -12,10 +12,18 @@ export default function App() {
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')
   const [page, setPage] = useState(1)
+  const [scrolled, setScrolled] = useState(false)    // iOS large title 收縮狀態
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
 
   // 進入/離開詳情頁、切換頁碼時都捲返頂部
   useEffect(() => { window.scrollTo(0, 0) }, [selected, page])
+
+  // 監聽捲動 — 超過 40px 就收縮大標題（iOS large title 行為）
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const changeFilter = (f) => { setFilter(f); setPage(1) }
 
@@ -96,11 +104,11 @@ export default function App() {
     <div className="app">
       <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
 
-      <div className="header-sticky">
+      <div className={`header-sticky ${scrolled ? 'compact' : ''}`}>
         <div className="header-inner">
           <div className="topbar">
             <div className="brand">
-              <i>Velvet</i>
+              <i className="brand-mark">Velvet</i>
               <small>{view === 'favorites' ? '我的收藏 · 香港' : '精緻配對 · 香港'}</small>
             </div>
             <div className="search glass">
@@ -109,9 +117,9 @@ export default function App() {
           </div>
 
           {view === 'home' && (
-            <div className="filters">
+            <div className="filters segmented">
               {FILTERS.map(f => (
-                <div key={f} className={`chip ${filter === f ? 'active' : ''}`} onClick={() => changeFilter(f)}>
+                <div key={f} className={`seg ${filter === f ? 'active' : ''}`} onClick={() => changeFilter(f)}>
                   {f}
                 </div>
               ))}

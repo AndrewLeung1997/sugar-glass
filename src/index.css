@@ -52,38 +52,66 @@ body {
 .app { padding: 0; }
 .app-inner { max-width: 1180px; margin: 0 auto; padding: 28px 22px calc(80px + env(safe-area-inset-bottom)); }
 
-/* 固定置頂 header — 全寬，與手機狀態欄融為一體 */
+/* iOS 27 Liquid Glass — 固定置頂 header，與狀態欄融為一體 */
 .header-sticky {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(255, 245, 251, 0.96); backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.6), 0 1px 3px rgba(120,80,160,0.08);
   padding-top: env(safe-area-inset-top);
+  transition: background .3s ease, box-shadow .3s ease;
 }
-/* 狀態欄區域加淡暗漤層，令 black-translucent 白色狀態欄文字可讀 */
+/* 狀態欄區域淡暗漤層 — 令 black-translucent 白色狀態欄文字可讀 */
 .header-sticky::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: env(safe-area-inset-top);
-  background: linear-gradient(to bottom, rgba(60, 30, 80, 0.28), rgba(60, 30, 80, 0.06));
+  background: linear-gradient(to bottom, rgba(60, 30, 80, 0.22), rgba(60, 30, 80, 0.04));
   pointer-events: none; z-index: 0;
 }
-.header-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 18px 22px 14px; }
+.header-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 14px 22px 14px; transition: padding .3s ease; }
 
-/* 頂部 */
-.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.brand { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; letter-spacing: 0.5px; }
-.brand i { font-style: italic; color: var(--accent); }
-.brand small { display:block; font-family:'Noto Sans TC'; font-size: 11px; font-weight: 400; color: var(--text-soft); letter-spacing: 3px; margin-top: -2px; }
-.search { padding: 12px 18px; border-radius: 999px; }
-
-/* 篩選 chips */
-.filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 0; }
-.chip {
-  padding: 9px 18px; border-radius: 999px; font-size: 13px; cursor: pointer;
-  background: var(--glass); border: 1px solid var(--glass-border);
-  backdrop-filter: blur(12px); transition: all .25s;
+/* 頂部列 */
+.topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; transition: all .3s ease; }
+.brand { line-height: 1; }
+.brand-mark {
+  font-family: -apple-system, 'SF Pro Display', 'Playfair Display', system-ui, sans-serif;
+  font-size: 34px; font-weight: 700; letter-spacing: -0.5px; color: var(--text);
+  font-style: italic; background: linear-gradient(135deg, #c084fc, #f472b6);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  display: inline-block; transition: font-size .3s cubic-bezier(.2,.8,.2,1);
 }
-.chip.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; border-color: transparent; }
-.chip:hover { transform: translateY(-2px); }
+.brand small { display:block; font-family:'Noto Sans TC', -apple-system; font-size: 11px; font-weight: 500; color: var(--text-soft); letter-spacing: 2px; margin-top: 4px; transition: opacity .25s ease, max-height .3s ease; opacity: 1; max-height: 20px; }
+
+/* 浮動藥丸搜尋列 */
+.search { padding: 11px 18px; border-radius: 999px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.6); }
+
+/* iOS segmented control 篩選 */
+.filters.segmented {
+  display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px;
+  background: rgba(120, 80, 160, 0.1); border: 1px solid rgba(255,255,255,0.4);
+  backdrop-filter: blur(12px); margin-bottom: 2px; flex-wrap: wrap;
+}
+.seg {
+  padding: 7px 16px; border-radius: 9px; font-size: 13px; font-weight: 500; cursor: pointer;
+  color: var(--text-soft); transition: all .25s cubic-bezier(.2,.8,.2,1); white-space: nowrap;
+}
+.seg.active {
+  background: #fff; color: var(--text); font-weight: 600;
+  box-shadow: 0 1px 3px rgba(120,80,160,0.18), 0 0 0 0.5px rgba(120,80,160,0.1);
+}
+.seg:not(.active):hover { color: var(--text); background: rgba(255,255,255,0.4); }
+
+/* Large title 收縮狀態（捲動時）— iOS 經典 large title 行為 */
+.header-sticky.compact {
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.6), 0 2px 12px rgba(120,80,160,0.1);
+}
+.header-sticky.compact .header-inner { padding: 10px 22px 10px; }
+.header-sticky.compact .topbar { align-items: center; margin-bottom: 6px; }
+.header-sticky.compact .brand-mark { font-size: 19px; }
+.header-sticky.compact .brand small { opacity: 0; max-height: 0; margin-top: 0; }
+.header-sticky.compact .filters.segmented { display: none; }
 
 /* 列表卡片 */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }
