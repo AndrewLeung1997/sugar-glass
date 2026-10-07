@@ -172,13 +172,8 @@ export default function App() {
             </div>
 
             <div ref={sentinelRef} className="load-more">
-              {hasMore ? (
-                isLoading
-                  ? <div className="lm-spinner glass">載入中…</div>
-                  : <div className="lm-hint">向下捲動載入更多 ↓</div>
-              ) : (
-                <div className="lm-end">已顯示全部 {source.length} 位</div>
-              )}
+              {hasMore && isLoading && <div className="lm-spinner glass">載入中…</div>}
+              {!hasMore && <div className="lm-end">已顯示全部 {source.length} 位</div>}
             </div>
           </>
         )}
