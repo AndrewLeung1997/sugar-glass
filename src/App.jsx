@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { PROFILES, FILTERS } from './data.js'
 import ProfileCard from './components/ProfileCard.jsx'
 import ProfilePage from './components/ProfilePage.jsx'
@@ -11,12 +11,17 @@ export default function App() {
   const [view, setView] = useState('home')          // home | favorites | member
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')
-  const [page, setPage] = useState(1)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)  // infinite scroll 已載入數量
   const [scrolled, setScrolled] = useState(false)    // iOS large title 收縮狀態
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
+  const sentinelRef = useRef(null)
+  const loadingRef = useRef(false)
 
-  // 進入/離開詳情頁、切換頁碼時都捲返頂部
-  useEffect(() => { window.scrollTo(0, 0) }, [selected, page])
+  // 進入/離開詳情頁時捲返頂部 + 重設載入數
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    setVisibleCount(PAGE_SIZE)
+  }, [selected])
 
   // 監聽捲動 — 超過 40px 就收縮大標題（iOS large title 行為）
   useEffect(() => {
@@ -25,7 +30,7 @@ export default function App() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const changeFilter = (f) => { setFilter(f); setPage(1) }
+  const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
 
   // 詳情頁 — 任何 view 都可以進入
   if (selected) {
@@ -51,7 +56,7 @@ export default function App() {
         <div className="header-sticky">
           <div className="header-inner">
             <div className="topbar">
-              <div className="brand"><i>Velvet</i><small>精緻配對 · 香港</small></div>
+              <div className="brand"><i className="brand-mark">Velvet</i><small>精緻配對 · 香港</small></div>
             </div>
           </div>
         </div>
@@ -84,21 +89,27 @@ export default function App() {
     ? PROFILES.filter(p => favorites.has(p.id))
     : (filter === '全部' ? PROFILES : PROFILES.filter(p => p.stats.lifestyle === filter))
 
-  const totalPages = Math.max(1, Math.ceil(source.length / PAGE_SIZE))
-  const cur = Math.min(page, totalPages)
-  const start = (cur - 1) * PAGE_SIZE
-  const pageItems = source.slice(start, start + PAGE_SIZE)
+  const items = source.slice(0, visibleCount)
+  const hasMore = visibleCount < source.length
 
-  const pageBtns = []
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) pageBtns.push(i)
-  } else if (cur <= 4) {
-    pageBtns.push(1, 2, 3, 4, 5, '…', totalPages)
-  } else if (cur >= totalPages - 3) {
-    pageBtns.push(1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages)
-  } else {
-    pageBtns.push(1, '…', cur - 1, cur, cur + 1, '…', totalPages)
-  }
+  // 載入更多
+  const loadMore = useCallback(() => {
+    if (loadingRef.current || !hasMore) return
+    loadingRef.current = true
+    setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
+    setTimeout(() => { loadingRef.current = false }, 200)
+  }, [hasMore, source.length])
+
+  // IntersectionObserver — sentinel 進入視窗就載入更多
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) loadMore()
+    }, { rootMargin: '300px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [loadMore])
 
   return (
     <div className="app">
@@ -136,28 +147,23 @@ export default function App() {
         ) : (
           <>
             <div className="grid">
-              {pageItems.map(p => (
+              {items.map(p => (
                 <ProfileCard key={p.id} profile={p} onOpen={() => setSelected(p)} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
               ))}
             </div>
 
-            <div className="pager">
-              <div className="count">顯示 {start + 1}–{Math.min(start + PAGE_SIZE, source.length)}，共 {source.length} 位</div>
-              <div className="pager-btns">
-                <button className="pg" disabled={cur === 1} onClick={() => setPage(cur - 1)}>‹ 上一頁</button>
-                {pageBtns.map((p, i) =>
-                  p === '…'
-                    ? <span key={`e${i}`} className="ellipsis">…</span>
-                    : <button key={p} className={`pg ${p === cur ? 'active' : ''}`} onClick={() => setPage(p)}>{p}</button>
-                )}
-                <button className="pg" disabled={cur === totalPages} onClick={() => setPage(cur + 1)}>下一頁 ›</button>
-              </div>
+            <div ref={sentinelRef} className="load-more">
+              {hasMore ? (
+                <div className="lm-spinner glass">載入中…</div>
+              ) : (
+                <div className="lm-end">已顯示全部 {source.length} 位</div>
+              )}
             </div>
           </>
         )}
       </div>
 
-      <BottomBar view={view} onChange={(v) => { setView(v); setSelected(null); setPage(1) }} />
+      <BottomBar view={view} onChange={(v) => { setView(v); setSelected(null); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }} />
     </div>
   )
 }
