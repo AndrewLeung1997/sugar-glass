@@ -19,6 +19,7 @@ export default function App() {
   const [animDone, setAnimDone] = useState(false)   // 詳情頁進入動畫完成（移除 class 避免 containing block）
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
+  const scrollPosRef = useRef(0)  // 記住開詳情頁前嘅捲動位置
 
   // 列表資料（唔係 hook，但放喺 return 之前計算）
   const source = view === 'favorites'
@@ -27,10 +28,13 @@ export default function App() {
   const items = source.slice(0, visibleCount)
   const hasMore = visibleCount < source.length
 
-  // 進入/離開詳情頁時捲返頂部 + 重設載入數
+  // 進入詳情頁捲返頂部；返回時恢復原本捲動位置（唔重設 visibleCount）
   useEffect(() => {
-    window.scrollTo(0, 0)
-    setVisibleCount(PAGE_SIZE)
+    if (selected) {
+      window.scrollTo(0, 0)
+    } else if (scrollPosRef.current > 0) {
+      window.scrollTo(0, scrollPosRef.current)
+    }
   }, [selected])
 
   // 監聽捲動 — 超過 40px 就收縮大標題（iOS large title 行為）
@@ -59,7 +63,7 @@ export default function App() {
   const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
   const switchView = (v) => { setView(v); setSelected(null); setClosing(false); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
 
-  const openProfile = (p) => { setClosing(false); setAnimDone(false); setSelected(p) }
+  const openProfile = (p) => { scrollPosRef.current = window.scrollY; setClosing(false); setAnimDone(false); setSelected(p) }
   const closeProfile = () => {
     setClosing(true)
     setTimeout(() => { setSelected(null); setClosing(false); setAnimDone(false) }, 340)
