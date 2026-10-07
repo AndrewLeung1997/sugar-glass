@@ -11,9 +11,10 @@ function GalleryShot({ src, onOpen }) {
   )
 }
 
-export default function ProfilePage({ profile }) {
+export default function ProfilePage({ profile, isFavorite, onToggleFav }) {
   const [lightbox, setLightbox] = useState(null)
   const heroLoaded = useImageLoaded(profile.cover)
+  const fav = isFavorite ? isFavorite(profile.id) : false
 
   const open = (i) => setLightbox(i)
   const close = () => setLightbox(null)
@@ -75,7 +76,9 @@ export default function ProfilePage({ profile }) {
       {/* 行動按鈕 */}
       <div className="actions">
         <button className="btn primary">✦ 發送邀請</button>
-        <button className="btn ghost">♡ 收藏</button>
+        <button className={`btn ${fav ? 'primary' : 'ghost'}`} onClick={() => onToggleFav(profile.id)}>
+          {fav ? '♥ 已收藏' : '♡ 收藏'}
+        </button>
       </div>
 
       {/* Lightbox 放大檢視 */}
