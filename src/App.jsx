@@ -129,7 +129,8 @@ export default function App() {
           </div>
 
           {view === 'home' && (
-            <div className="filters segmented">
+            <div className="filters segmented" style={{ '--active': FILTERS.indexOf(filter) }}>
+              <div className="seg-indicator" />
               {FILTERS.map(f => (
                 <div key={f} className={`seg ${filter === f ? 'active' : ''}`} onClick={() => changeFilter(f)}>
                   {f}
