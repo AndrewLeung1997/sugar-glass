@@ -256,24 +256,34 @@ body {
 .fav-btn:hover { transform: scale(1.12); background: rgba(255,255,255,1); }
 .fav-btn.active { background: linear-gradient(135deg, #f472b6, #c084fc); color: #fff; }
 
-/* Bottom navigation bar */
+/* iOS 27 Liquid Glass — 浮動 bottom navigation bar */
 .bottom-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
-  display: flex; justify-content: space-around; align-items: center;
-  background: rgba(255, 245, 251, 0.92); backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border-top: 1px solid var(--glass-border);
-  padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -4px 24px rgba(120, 80, 160, 0.1);
+  position: fixed; bottom: calc(14px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+  z-index: 60;
+  display: flex; align-items: center; gap: 4px;
+  max-width: 360px; width: calc(100% - 28px);
+  padding: 8px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.6), 0 8px 32px rgba(120, 80, 160, 0.18);
 }
 .bb-tab {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 12px 4px 10px; background: none; border: none; cursor: pointer;
-  color: var(--text-soft); font-family: inherit; font-size: 11px; transition: color .2s;
+  padding: 10px 4px 8px; background: none; border: none; cursor: pointer;
+  color: var(--text-soft); font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.2px; transition: color .25s;
+  border-radius: 22px;
 }
-.bb-tab .bb-icon { font-size: 22px; line-height: 1; }
-.bb-tab.active { color: var(--accent); }
-.bb-tab.active .bb-icon { transform: translateY(-2px); transition: transform .2s; }
+.bb-tab .bb-icon { font-size: 22px; line-height: 1; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.bb-tab.active { color: var(--accent); font-weight: 600; }
+.bb-tab.active .bb-icon {
+  transform: translateY(-3px) scale(1.08);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
 
 /* 有 bottom bar 時內容要留空間 */
 .app-with-bar { padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important; }
