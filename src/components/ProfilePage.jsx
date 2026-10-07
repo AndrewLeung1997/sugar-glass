@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useImageLoaded } from '../hooks/useImageLoaded.js'
 
-function GalleryShot({ src, onOpen }) {
+function LuxShot({ src, onOpen, tall }) {
   const loaded = useImageLoaded(src)
   return (
-    <div className="shot" style={{ backgroundImage: loaded ? `url(${src})` : 'none' }} onClick={onOpen}>
+    <div className={`lux-shot ${tall ? 'tall' : ''}`} style={{ backgroundImage: loaded ? `url(${src})` : 'none' }} onClick={onOpen}>
       {!loaded && <div className="skeleton shimmer" />}
-      <div className="zoom-hint">⤢</div>
     </div>
   )
 }
 
-export default function ProfilePage({ profile, isFavorite, onToggleFav }) {
+export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }) {
   const [lightbox, setLightbox] = useState(null)
   const heroLoaded = useImageLoaded(profile.cover)
   const fav = isFavorite ? isFavorite(profile.id) : false
@@ -21,7 +20,6 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav }) {
   const prev = () => setLightbox(i => (i - 1 + profile.photos.length) % profile.photos.length)
   const next = () => setLightbox(i => (i + 1) % profile.photos.length)
 
-  // 鍵盤控制：← → 切換，ESC 關閉
   useEffect(() => {
     if (lightbox === null) return
     const onKey = (e) => {
@@ -37,51 +35,60 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav }) {
     }
   }, [lightbox])
 
+  // 瀑布流：交替高/矮
+  const talls = profile.photos.map((_, i) => i % 2 === 0)
+
   return (
-    <div className="detail">
-      {/* 大圖 hero — 圓角卡片風，名字 + 職業 overlay */}
-      <div className="hero glass">
-        <div className="bg" style={{ backgroundImage: heroLoaded ? `url(${profile.cover})` : 'none', backgroundPosition: 'center 25%' }} />
-        {!heroLoaded && <div className="skeleton shimmer hero-skel" />}
-        {profile.verified && <div className="verify">✓ 已認證</div>}
-        <div className="meta">
-          <div className="occ-pill">{profile.occupation}</div>
-          <h2>{profile.name} <span className="age">{profile.age}</span></h2>
-          <div className="sub">{profile.city} · {profile.tagline}</div>
+    <div className="detail-lux">
+      {/* 全屏大圖 hero */}
+      <section className="lux-hero">
+        <div className="lux-hero-bg" style={{ backgroundImage: heroLoaded ? `url(${profile.cover})` : 'none' }} />
+        {!heroLoaded && <div className="skeleton shimmer" style={{ position: 'absolute', inset: 0 }} />}
+        <div className="lux-hero-grad" />
+        <button className="lux-back" onClick={onBack} aria-label="返回">‹</button>
+        {profile.verified && <div className="lux-verify">✓ Verified</div>}
+        <div className="lux-hero-meta">
+          <div className="lux-occ">{profile.occupation}</div>
+          <h1 className="lux-name">{profile.name} <span className="lux-age">{profile.age}</span></h1>
+          <div className="lux-loc">{profile.city} · {profile.tagline}</div>
         </div>
-      </div>
+      </section>
 
-      {/* 關於我 */}
-      <div className="panel glass">
-        <h3>關於我</h3>
-        <p className="bio">{profile.bio}</p>
-        <div className="tags">
-          {profile.tags.map(t => <span key={t} className="tag-pill">{t}</span>)}
-        </div>
-      </div>
+      {/* 統計條 */}
+      <section className="lux-stats">
+        <div className="lux-stat"><b>{profile.stats.budget}</b><small>預算</small></div>
+        <span className="lux-div" />
+        <div className="lux-stat"><b>{profile.stats.lifestyle}</b><small>風格</small></div>
+      </section>
 
-      {/* 相片 — 網格排列，可點擊放大 */}
-      <div className="gallery glass">
-        <div className="gallery-title">
-          <h3>相片</h3>
-          <span>{profile.photos.length} 張</span>
+      {/* 關於 */}
+      <section className="lux-about">
+        <div className="lux-h"><span className="lux-h-line" />About</div>
+        <p className="lux-bio">{profile.bio}</p>
+        <div className="lux-tags">
+          {profile.tags.map(t => <span key={t} className="lux-tag">{t}</span>)}
         </div>
-        <div className="scroller">
+      </section>
+
+      {/* 相片牆 — 瀑布流 */}
+      <section className="lux-gallery">
+        <div className="lux-h"><span className="lux-h-line" />Gallery <span className="lux-h-count">{profile.photos.length}</span></div>
+        <div className="lux-masonry">
           {profile.photos.map((p, i) => (
-            <GalleryShot key={i} src={p} onOpen={() => open(i)} />
+            <LuxShot key={i} src={p} tall={talls[i]} onOpen={() => open(i)} />
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* 行動按鈕 */}
-      <div className="actions">
-        <button className="btn primary">✦ 發送邀請</button>
-        <button className={`btn ${fav ? 'primary' : 'ghost'}`} onClick={() => onToggleFav(profile.id)}>
+      {/* 行動 */}
+      <div className="lux-actions">
+        <button className="lux-btn filled">發送邀請</button>
+        <button className={`lux-btn outline ${fav ? 'fav' : ''}`} onClick={() => onToggleFav(profile.id)}>
           {fav ? '♥ 已收藏' : '♡ 收藏'}
         </button>
       </div>
 
-      {/* Lightbox 放大檢視 */}
+      {/* Lightbox */}
       {lightbox !== null && (
         <div className="lightbox" onClick={close}>
           <button className="lb-close" onClick={close}>✕</button>
@@ -91,11 +98,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav }) {
               <button className="lb-nav next" onClick={(e) => { e.stopPropagation(); next() }}>›</button>
             </>
           )}
-          <img
-            src={profile.photos[lightbox]}
-            alt=""
-            onClick={(e) => e.stopPropagation()}
-          />
+          <img src={profile.photos[lightbox]} alt="" onClick={(e) => e.stopPropagation()} />
           <div className="lb-count">{lightbox + 1} / {profile.photos.length}</div>
         </div>
       )}

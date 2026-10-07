@@ -65,10 +65,7 @@ export default function App() {
       <div className="app">
         <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
         <div className="app-inner app-with-bar">
-          <div className="back glass" onClick={() => setSelected(null)}>
-            ← 返回
-          </div>
-          <ProfilePage profile={selected} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
+          <ProfilePage profile={selected} isFavorite={isFavorite} onToggleFav={toggleFavorite} onBack={() => setSelected(null)} />
         </div>
         <BottomBar view={view} onChange={switchView} />
       </div>
