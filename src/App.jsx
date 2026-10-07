@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { PROFILES, FILTERS } from './data.js'
 import ProfileCard from './components/ProfileCard.jsx'
 import ProfilePage from './components/ProfilePage.jsx'
@@ -9,6 +9,9 @@ export default function App() {
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')
   const [page, setPage] = useState(1)
+
+  // 進入/離開詳情頁時捲返頂部（避免保留列表頁嘅捲動位置）
+  useEffect(() => { window.scrollTo(0, 0) }, [selected])
 
   const filtered = filter === '全部'
     ? PROFILES
