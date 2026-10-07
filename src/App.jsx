@@ -16,6 +16,7 @@ export default function App() {
   const [scrolled, setScrolled] = useState(false)    // iOS large title 收縮狀態
   const [isLoading, setIsLoading] = useState(false) // infinite scroll 載入中
   const [closing, setClosing] = useState(false)     // 詳情頁退出動畫
+  const [animDone, setAnimDone] = useState(false)   // 詳情頁進入動畫完成（移除 class 避免 containing block）
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
 
@@ -58,10 +59,10 @@ export default function App() {
   const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
   const switchView = (v) => { setView(v); setSelected(null); setClosing(false); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
 
-  const openProfile = (p) => { setClosing(false); setSelected(p) }
+  const openProfile = (p) => { setClosing(false); setAnimDone(false); setSelected(p) }
   const closeProfile = () => {
     setClosing(true)
-    setTimeout(() => { setSelected(null); setClosing(false) }, 340)
+    setTimeout(() => { setSelected(null); setClosing(false); setAnimDone(false) }, 340)
   }
 
   // ===== early returns（喺所有 hooks 之後）=====
@@ -71,7 +72,10 @@ export default function App() {
     return (
       <div className="app">
         <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
-        <div className={`app-inner app-with-bar detail-pop ${closing ? 'detail-pop-out' : ''}`}>
+        <div
+          className={`app-inner app-with-bar ${closing ? 'detail-pop-out' : ''} ${!animDone && !closing ? 'detail-pop' : ''}`}
+          onAnimationEnd={() => { if (!closing) setAnimDone(true) }}
+        >
           <div className="back glass" onClick={closeProfile}>
             ← 返回
           </div>
