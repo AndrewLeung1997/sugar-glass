@@ -245,6 +245,9 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .lm-end { font-size: 12px; color: var(--text-soft); letter-spacing: 1px; opacity: 0.7; }
+.lm-hint { font-size: 13px; color: var(--text-soft); letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+.lm-hint::after { content: '↓'; animation: bob 1.4s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(4px); opacity: 1; } }
 .ellipsis { padding: 0 4px; color: var(--text-soft); }
 
 /* 卡片收藏掣 */

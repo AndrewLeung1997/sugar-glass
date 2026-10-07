@@ -14,6 +14,7 @@ export default function App() {
   const [filter, setFilter] = useState('全部')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)  // infinite scroll 已載入數量
   const [scrolled, setScrolled] = useState(false)    // iOS large title 收縮狀態
+  const [isLoading, setIsLoading] = useState(false) // infinite scroll 載入中
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
 
@@ -44,7 +45,9 @@ export default function App() {
     if (!el || !hasMore) return
     const io = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
+        setIsLoading(true)
         setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
+        setTimeout(() => setIsLoading(false), 400)
       }
     }, { rootMargin: '300px' })
     io.observe(el)
@@ -152,7 +155,9 @@ export default function App() {
 
             <div ref={sentinelRef} className="load-more">
               {hasMore ? (
-                <div className="lm-spinner glass">載入中…</div>
+                isLoading
+                  ? <div className="lm-spinner glass">載入中…</div>
+                  : <div className="lm-hint">向下捲動載入更多 ↓</div>
               ) : (
                 <div className="lm-end">已顯示全部 {source.length} 位</div>
               )}
