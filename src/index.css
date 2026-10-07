@@ -88,23 +88,39 @@ body {
 /* 浮動藥丸搜尋列 */
 .search { padding: 11px 18px; border-radius: 999px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.6); }
 
-/* iOS segmented control 篩選 — 滑動指示器 */
+/* iOS 27 Liquid Glass 浮動 segmented control — 獨立於 app bar */
+.seg-bar {
+  position: sticky; top: calc(50px + env(safe-area-inset-top)); z-index: 40;
+  max-width: 1180px; margin: 0 auto; padding: 10px 22px 8px;
+}
+.seg-bar::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: -1;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.12) 70%, transparent 100%);
+  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  pointer-events: none;
+}
 .filters.segmented {
-  position: relative; display: flex; padding: 3px; border-radius: 12px;
-  background: rgba(120, 80, 160, 0.12); border: 1px solid rgba(255,255,255,0.4);
-  backdrop-filter: blur(12px); margin-bottom: 2px;
+  position: relative; display: flex; padding: 4px; border-radius: 16px;
+  background: rgba(255,255,255,0.20);
+  backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%);
+  border: 0.5px solid rgba(255,255,255,0.32);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.35), inset 0 -0.5px 1px rgba(120,80,160,0.05),
+              0 6px 24px rgba(60,30,80,0.08), 0 1px 3px rgba(0,0,0,0.03);
 }
 .seg-indicator {
-  position: absolute; top: 3px; bottom: 3px; left: 3px;
-  width: calc((100% - 6px) / 6);
-  border-radius: 9px; background: #fff;
-  box-shadow: 0 1px 3px rgba(120,80,160,0.2), 0 0 0 0.5px rgba(120,80,160,0.08);
+  position: absolute; top: 4px; bottom: 4px; left: 4px;
+  width: calc((100% - 8px) / 6);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 1.5px rgba(255,255,255,1), inset 0 -1px 1px rgba(180,140,200,0.08),
+              0 2px 8px rgba(60,30,80,0.1), 0 0 0 0.5px rgba(255,255,255,0.5);
   transform: translateX(calc(var(--active, 0) * 100%));
-  transition: transform .35s cubic-bezier(.2,.8,.2,1);
+  transition: transform .4s cubic-bezier(.2,.8,.2,1);
   z-index: 0;
 }
 .seg {
-  flex: 1; position: relative; z-index: 1; padding: 7px 4px; border-radius: 9px;
+  flex: 1; position: relative; z-index: 1; padding: 8px 4px; border-radius: 12px;
   font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-soft);
   transition: color .25s; white-space: nowrap; text-align: center;
 }
@@ -120,7 +136,6 @@ body {
 .header-sticky.compact .topbar { align-items: center; margin-bottom: 6px; }
 .header-sticky.compact .brand-mark { font-size: 19px; }
 .header-sticky.compact .brand small { opacity: 0; max-height: 0; margin-top: 0; }
-.header-sticky.compact .filters.segmented { display: none; }
 
 /* 列表卡片 */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }

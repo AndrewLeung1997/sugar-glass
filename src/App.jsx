@@ -127,19 +127,21 @@ export default function App() {
               <input placeholder="搜尋名字、地區、興趣…" style={{ border:'none', background:'transparent', outline:'none', width:220, fontSize:14, color:'var(--text)' }} />
             </div>
           </div>
-
-          {view === 'home' && (
-            <div className="filters segmented" style={{ '--active': FILTERS.indexOf(filter) }}>
-              <div className="seg-indicator" />
-              {FILTERS.map(f => (
-                <div key={f} className={`seg ${filter === f ? 'active' : ''}`} onClick={() => changeFilter(f)}>
-                  {f}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
+
+      {view === 'home' && (
+        <div className="seg-bar">
+          <div className="filters segmented" style={{ '--active': FILTERS.indexOf(filter) }}>
+            <div className="seg-indicator" />
+            {FILTERS.map(f => (
+              <div key={f} className={`seg ${filter === f ? 'active' : ''}`} onClick={() => changeFilter(f)}>
+                {f}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="app-inner app-with-bar">
         {source.length === 0 ? (
