@@ -1,8 +1,12 @@
 // mock data — 假資料
 // 照片用 GenerateImage 生成嘅可愛日本女性相（3:4 直向）
-const img = (n) => `/${n}.jpg`
+const img = (n) => `${import.meta.env.BASE_URL}${n}.jpg`
 
 export const PROFILES = [
+  { id: 'p83', name: 'Yui', age: 26, city: '東涌', occupation: '空姐', tagline: '雲端與紅酒', bio: '國泰長途線空姐，最愛巴黎 layover 同機艙外的日出。下班愛去中環喝一杯 natural wine。期待一個也懂時差、願意等我落地的人。', cover: img('p83'), photos: [img('p83'), img('p83a'), img('p83b')], tags: ['空姐', '飛行', '巴黎', '紅酒', '旅行'], verified: true, stats: { lifestyle: '奢華', budget: '16K+' } },
+  { id: 'p84', name: 'Mei', age: 28, city: '九龍站', occupation: '空姐', tagline: '長途線與溫泉', bio: '飛歐洲線五年，最愛倫敦的雨與北海道的溫泉。落地後第一件事是一杯手沖咖啡。尋找一個也懂 jet lag 浪漫的人。', cover: img('p84'), photos: [img('p84'), img('p84a'), img('p84b')], tags: ['空姐', '長途線', '溫泉', '咖啡', '倫敦'], verified: true, stats: { lifestyle: '高端', budget: '18K+' } },
+  { id: 'p85', name: 'Saki', age: 25, city: '將軍澳', occupation: '空姐', tagline: '短途線與甜品', bio: '飛日韓短途線，首爾同東京是我的第二個家。最愛機場免稅店的甜點櫃。期待一段也愛周末說走就走的人。', cover: img('p85'), photos: [img('p85'), img('p85a'), img('p85b')], tags: ['空姐', '短途線', '首爾', '甜品', '瑜伽'], verified: false, stats: { lifestyle: '簡約', budget: '10K+' } },
+  { id: 'p86', name: 'Riko', age: 30, city: '中環', occupation: '空姐（商務艙）', tagline: '商務艙與米其林', bio: '商務艙乘務長，見盡世界各地的米其林。最愛東京的壽司吧與巴黎的 bistro。尋找一個也懂精緻生活、能一起飛的人。', cover: img('p86'), photos: [img('p86'), img('p86a'), img('p86b')], tags: ['空姐', '商務艙', '米其林', '東京', '滑雪'], verified: true, stats: { lifestyle: '頂級', budget: '25K+' } },
   {
     id: 'p1', name: 'Aria', age: 26, city: '中環', occupation: '藝術策展人', tagline: '喜歡爵士與慢旅行',
     bio: '在畫廊工作，週末愛去赤柱吹海風。重視深度對話多過物質，期待一段彼此啟發的關係。不抽煙，偶爾一杯 natural wine。',
