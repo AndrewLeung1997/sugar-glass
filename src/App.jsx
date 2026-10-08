@@ -3,12 +3,14 @@ import { PROFILES, FILTERS } from './data.js'
 import ProfileCard from './components/ProfileCard.jsx'
 import ProfilePage from './components/ProfilePage.jsx'
 import BottomBar from './components/BottomBar.jsx'
+import Landing from './components/Landing.jsx'
 import { useFavorites } from './hooks/useFavorites.js'
 
 const PAGE_SIZE = 12
 
 export default function App() {
   // ===== 所有 useState / useRef 必須喺任何 early return 之前 =====
+  const [showLanding, setShowLanding] = useState(true)
   const [view, setView] = useState('home')          // home | favorites | member
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')
@@ -70,6 +72,11 @@ export default function App() {
   }
 
   // ===== early returns（喺所有 hooks 之後）=====
+
+  // Landing page — 首次進入時顯示
+  if (showLanding) {
+    return <Landing onEnter={() => { setShowLanding(false); window.scrollTo(0, 0) }} />
+  }
 
   // 詳情頁 — 任何 view 都可以進入
   if (selected) {
