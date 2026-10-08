@@ -327,15 +327,13 @@ body {
 
 /* 相片牆 — 瀑布流 */
 .lux-gallery { padding: 36px 32px 8px; }
-.lux-masonry { column-count: 2; column-gap: 14px; }
+.lux-masonry { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .lux-shot {
-  break-inside: avoid; width: 100%; margin-bottom: 14px; border-radius: 12px; overflow: hidden;
+  break-inside: avoid; width: 100%; margin-bottom: 0; border-radius: 12px; overflow: hidden;
   background-size: cover; background-position: center; cursor: zoom-in; position: relative;
-  padding-bottom: 75%; transition: transform .35s cubic-bezier(.2,.8,.2,1);
+  aspect-ratio: 3 / 4; transition: transform .35s cubic-bezier(.2,.8,.2,1);
   box-shadow: var(--shadow);
 }
-.lux-shot.tall { padding-bottom: 100%; }
-.lux-shot.full { column-span: all; padding-bottom: 42%; border-radius: 12px; }
 .lux-shot:hover { transform: scale(1.02); }
 .lux-shot .skeleton { border-radius: 14px; }
 
@@ -457,7 +455,7 @@ body {
 .mitem:hover { background: var(--bg-soft); transform: translateX(4px); border-color: var(--border-strong); }
 
 /* ===== Landing Page ===== */
-.landing { max-width: 960px; margin: 0 auto; }
+.landing { width: 100%; margin: 0 auto; }
 
 /* Hero */
 .lp-hero { position: relative; width: 100%; height: 88vh; min-height: 560px; overflow: hidden; padding-top: env(safe-area-inset-top); }
