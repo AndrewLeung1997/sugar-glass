@@ -4,8 +4,8 @@ export default function Landing({ onEnter }) {
   const { brand, hero, about, stats, features, testimonials, finalCta, footer } = LANDING
 
   return (
-    <div className="landing">
-      {/* Hero */}
+    <>
+      {/* Hero — 全屏闊，獨立於 .landing 容器 */}
       <section className="lp-hero">
         <div className="lp-hero-bg" style={{ backgroundImage: `url(${hero.bgImage})` }} />
         <div className="lp-hero-grad" />
@@ -26,6 +26,8 @@ export default function Landing({ onEnter }) {
           </div>
         </div>
       </section>
+
+      <div className="landing">
 
       {/* About */}
       <section className="lp-section lp-about">
@@ -102,5 +104,6 @@ export default function Landing({ onEnter }) {
         <div className="lp-footer-copy">{footer.copyright}</div>
       </footer>
     </div>
+    </>
   )
 }

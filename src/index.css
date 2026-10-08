@@ -335,6 +335,7 @@ body {
   box-shadow: var(--shadow);
 }
 .lux-shot.tall { padding-bottom: 100%; }
+.lux-shot.full { column-span: all; padding-bottom: 42%; border-radius: 12px; }
 .lux-shot:hover { transform: scale(1.02); }
 .lux-shot .skeleton { border-radius: 14px; }
 
@@ -456,18 +457,18 @@ body {
 .mitem:hover { background: var(--bg-soft); transform: translateX(4px); border-color: var(--border-strong); }
 
 /* ===== Landing Page ===== */
-.landing { max-width: 960px; margin: 0 auto; padding-top: env(safe-area-inset-top); }
+.landing { max-width: 960px; margin: 0 auto; }
 
 /* Hero */
-.lp-hero { position: relative; width: 100%; height: 88vh; min-height: 560px; overflow: hidden; }
+.lp-hero { position: relative; width: 100%; height: 88vh; min-height: 560px; overflow: hidden; padding-top: env(safe-area-inset-top); }
 .lp-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 30%; }
 .lp-hero-grad {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(26,26,26,0.78) 0%, rgba(26,26,26,0.3) 40%, rgba(26,26,26,0.15) 70%, transparent 100%);
+  background: linear-gradient(to top, rgba(26,26,26,0.72) 0%, rgba(26,26,26,0.28) 30%, transparent 55%);
 }
 .lp-hero-inner {
   position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column;
-  justify-content: center; padding: 0 8vw; color: #fff; max-width: 640px;
+  justify-content: flex-end; padding: 0 8vw 10vh; color: #fff; max-width: 640px;
 }
 .lp-hero-badge {
   font-family: var(--serif); font-size: 12px; letter-spacing: 4px; text-transform: uppercase;

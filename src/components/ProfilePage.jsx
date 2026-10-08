@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useImageLoaded } from '../hooks/useImageLoaded.js'
 
-function LuxShot({ src, onOpen, tall }) {
+function LuxShot({ src, onOpen, tall, full }) {
   const loaded = useImageLoaded(src)
   return (
-    <div className={`lux-shot ${tall ? 'tall' : ''}`} style={{ backgroundImage: loaded ? `url(${src})` : 'none' }} onClick={onOpen}>
+    <div className={`lux-shot ${tall ? 'tall' : ''} ${full ? 'full' : ''}`} style={{ backgroundImage: loaded ? `url(${src})` : 'none' }} onClick={onOpen}>
       {!loaded && <div className="skeleton shimmer" />}
     </div>
   )
@@ -35,8 +35,10 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
     }
   }, [lightbox])
 
-  // 瀑布流：交替高/矮
+  // 瀑布流：交替高/矮；奇數張時最後一張跨全欄
   const talls = profile.photos.map((_, i) => i % 2 === 0)
+  const isOdd = profile.photos.length % 2 === 1
+  const lastIdx = profile.photos.length - 1
 
   return (
     <div className="detail-lux">
@@ -74,7 +76,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
         <div className="lux-h"><span className="lux-h-line" />Gallery <span className="lux-h-count">{profile.photos.length}</span></div>
         <div className="lux-masonry">
           {profile.photos.map((p, i) => (
-            <LuxShot key={i} src={p} tall={talls[i]} onOpen={() => open(i)} />
+            <LuxShot key={i} src={p} tall={talls[i]} full={isOdd && i === lastIdx} onOpen={() => open(i)} />
           ))}
         </div>
       </section>
