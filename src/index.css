@@ -230,6 +230,17 @@ body {
   max-width: 90vw; max-height: 88vh; border-radius: 16px; object-fit: contain;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: lb-zoom .3s cubic-bezier(.2,.8,.2,1);
 }
+.lb-img-wrap { position: relative; display: inline-block; }
+.lb-wm {
+  position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background-repeat: repeat; background-size: 340px 190px;
+  border-radius: 16px; mix-blend-mode: overlay;
+}
+.lb-protect-hint {
+  position: absolute; top: calc(22px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  color: rgba(255,255,255,0.7); font-size: 12px; letter-spacing: 1px;
+  background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 999px; backdrop-filter: blur(8px);
+}
 @keyframes lb-zoom { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .lb-close {
   position: absolute; top: calc(22px + env(safe-area-inset-top)); right: calc(24px + env(safe-area-inset-right)); width: 44px; height: 44px; border-radius: 50%;
@@ -336,6 +347,27 @@ body {
 }
 .lux-shot:hover { transform: scale(1.02); }
 .lux-shot .skeleton { border-radius: 14px; }
+
+/* 浮水印 + 防截圖 */
+.lux-wm {
+  position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background-repeat: repeat; background-size: 340px 190px;
+  border-radius: 12px; mix-blend-mode: overlay;
+}
+.lux-shot, .lb-img-wrap, .lb-img-wrap img { user-select: none; -webkit-user-drag: none; }
+.detail-lux.is-guarded .lux-shot { filter: blur(22px) saturate(0.6); transform: none; }
+.detail-lux.is-guarded .lb-img-wrap img { filter: blur(26px) saturate(0.5); }
+.detail-lux.is-guarded .lux-wm { opacity: 0.25; }
+
+/* 截圖警告 toast */
+.ss-warning {
+  position: fixed; top: calc(14px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  z-index: 2000; background: rgba(184,37,46,0.95); color: #fff; font-family: var(--sans);
+  font-size: 14px; font-weight: 600; padding: 12px 22px; border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(184,37,46,0.4); backdrop-filter: blur(10px);
+  animation: ss-pop .3s cubic-bezier(.2,.8,.2,1); letter-spacing: 0.5px;
+}
+@keyframes ss-pop { from { opacity: 0; transform: translate(-50%, -16px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 /* 行動按鈕 */
 .lux-actions { display: flex; gap: 12px; padding: 28px 32px 8px; }

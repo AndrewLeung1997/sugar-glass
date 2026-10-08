@@ -6,7 +6,7 @@ export default function ProfileCard({ profile, onOpen, isFavorite, onToggleFav }
 
   return (
     <div className="card glass" onClick={onOpen}>
-      <div className="photo" style={{ backgroundImage: loaded ? `url(${profile.cover})` : 'none' }}>
+      <div className="photo" style={{ backgroundImage: `url(${profile.cover})` }}>
         {!loaded && <div className="skeleton shimmer" />}
         {profile.verified && <div className="badge">✓ 已認證</div>}
         <button

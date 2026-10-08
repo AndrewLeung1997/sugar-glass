@@ -1,6 +1,6 @@
 // mock data — 假資料
 // 照片用 GenerateImage 生成嘅可愛日本女性相（3:4 直向）
-const img = (n) => `${import.meta.env.BASE_URL}${n}.jpg`
+const img = (n) => `/${n}.jpg`
 
 export const PROFILES = [
   { id: 'p83', name: 'Yui', age: 26, city: '東涌', occupation: '空姐', tagline: '雲端與紅酒', bio: '國泰長途線空姐，最愛巴黎 layover 同機艙外的日出。下班愛去中環喝一杯 natural wine。期待一個也懂時差、願意等我落地的人。', cover: img('p83'), photos: [img('p83'), img('p83a'), img('p83b')], tags: ['空姐', '飛行', '巴黎', '紅酒', '旅行'], verified: true, stats: { lifestyle: '奢華', budget: '16K+' } },

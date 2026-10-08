@@ -10,7 +10,7 @@ const PAGE_SIZE = 12
 
 export default function App() {
   // ===== 所有 useState / useRef 必須喺任何 early return 之前 =====
-  const [showLanding, setShowLanding] = useState(true)
+  const [showLanding, setShowLanding] = useState(false)
   const [view, setView] = useState('home')          // home | favorites | member
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')

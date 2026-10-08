@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useImageLoaded } from '../hooks/useImageLoaded.js'
+import { useScreenshotGuard, getViewerId, watermarkDataUri } from '../hooks/useScreenshotGuard.js'
 
-function LuxShot({ src, onOpen }) {
+function LuxShot({ src, onOpen, wm }) {
   const loaded = useImageLoaded(src)
+  const block = (e) => { e.preventDefault(); return false }
   return (
-    <div className="lux-shot" style={{ backgroundImage: loaded ? `url(${src})` : 'none' }} onClick={onOpen}>
+    <div
+      className="lux-shot"
+      style={{ backgroundImage: loaded ? `url(${src})` : 'none' }}
+      onClick={onOpen}
+      onContextMenu={block}
+      onDragStart={block}
+    >
       {!loaded && <div className="skeleton shimmer" />}
+      <div className="lux-wm" style={{ backgroundImage: wm }} />
     </div>
   )
 }
@@ -14,6 +23,12 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
   const [lightbox, setLightbox] = useState(null)
   const heroLoaded = useImageLoaded(profile.cover)
   const fav = isFavorite ? isFavorite(profile.id) : false
+  const { guarded, warning, flash } = useScreenshotGuard()
+  const viewerId = getViewerId()
+  const today = new Date().toISOString().slice(0, 10)
+  const wmText = `${viewerId} · ${profile.name} · ${today}`
+  const wm = watermarkDataUri(wmText)
+  const block = (e) => { e.preventDefault(); return false }
 
   const open = (i) => setLightbox(i)
   const close = () => setLightbox(null)
@@ -38,7 +53,11 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
   // 統一 2 欄 grid，所有相片相同比例
 
   return (
-    <div className="detail-lux">
+    <div className={`detail-lux ${guarded ? 'is-guarded' : ''}`}>
+      {/* 截圖警告 */}
+      {warning && (
+        <div className="ss-warning" key={flash}>{warning}</div>
+      )}
       {/* 全屏大圖 hero */}
       <section className="lux-hero">
         <div className="lux-hero-bg" style={{ backgroundImage: heroLoaded ? `url(${profile.cover})` : 'none' }} />
@@ -73,7 +92,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
         <div className="lux-h"><span className="lux-h-line" />Gallery <span className="lux-h-count">{profile.photos.length}</span></div>
         <div className="lux-masonry">
           {profile.photos.map((p, i) => (
-            <LuxShot key={i} src={p} onOpen={() => open(i)} />
+            <LuxShot key={i} src={p} wm={wm} onOpen={() => open(i)} />
           ))}
         </div>
       </section>
@@ -96,8 +115,12 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
               <button className="lb-nav next" onClick={(e) => { e.stopPropagation(); next() }}>›</button>
             </>
           )}
-          <img src={profile.photos[lightbox]} alt="" onClick={(e) => e.stopPropagation()} />
+          <div className="lb-img-wrap" onClick={(e) => e.stopPropagation()} onContextMenu={block} onDragStart={block}>
+            <img src={profile.photos[lightbox]} alt="" draggable={false} />
+            <div className="lux-wm lb-wm" style={{ backgroundImage: wm }} />
+          </div>
           <div className="lb-count">{lightbox + 1} / {profile.photos.length}</div>
+          <div className="lb-protect-hint">本相片受版權保護 · 禁止截圖及轉載</div>
         </div>
       )}
     </div>
