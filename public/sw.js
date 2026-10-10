@@ -1,6 +1,6 @@
 // Service Worker — 圖片 cache-first，其他 request network-first
-const CACHE = 'velvet-img-v1'
-const IMG_CACHE = 'velvet-images-v1'
+const CACHE = 'velvet-img-v2'
+const IMG_CACHE = 'velvet-images-v2'
 
 self.addEventListener('install', (e) => {
   self.skipWaiting()

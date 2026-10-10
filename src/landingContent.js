@@ -14,7 +14,7 @@ export const LANDING = {
     ctaPrimary: '立即免費註冊',
     ctaPrimarySub: '註冊1分鐘 · 完全免費 · 免審核',
     ctaSecondary: '男士專區',
-    bgImage: '/p1.jpg',
+    bgImage: `${import.meta.env.BASE_URL}p1.jpg`,
   },
 
   about: {
