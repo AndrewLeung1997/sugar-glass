@@ -79,23 +79,30 @@ export default function App() {
     const r = el.getBoundingClientRect()
     const inView = r.bottom > 120 && r.top < window.innerHeight - 80
     if (!inView) el.scrollIntoView({ block: 'center', behavior: 'auto' })
-  }, [selected, closing, visibleCount, source, view])
+  }, [selected, closing, visibleCount, view, source.length])
 
   // IntersectionObserver — sentinel 進入視窗就載入更多
-  // dep 含 visibleCount + selected：返回詳情頁時重新 observe 新 sentinel（舊元素已 unmount）
+  // 必須含 showLanding：landing 期間 sentinel 未掛上，入主頁後要重新 observe
   useEffect(() => {
+    if (showLanding || selected) return
     const el = sentinelRef.current
-    if (!el || !hasMore || selected) return
+    if (!el || !hasMore) return
+    let busy = false
+    const load = () => {
+      if (busy) return
+      busy = true
+      setIsLoading(true)
+      setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
+      setTimeout(() => setIsLoading(false), 400)
+    }
     const io = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        setIsLoading(true)
-        setVisibleCount(c => Math.min(c + PAGE_SIZE, source.length))
-        setTimeout(() => setIsLoading(false), 400)
-      }
-    }, { rootMargin: '300px' })
+      if (entries[0].isIntersecting) load()
+    }, { rootMargin: '400px', threshold: 0 })
     io.observe(el)
+    const r = el.getBoundingClientRect()
+    if (r.top < window.innerHeight + 400) load()
     return () => io.disconnect()
-  }, [hasMore, source.length, visibleCount, selected])
+  }, [hasMore, source.length, visibleCount, selected, showLanding])
 
   const changeFilter = (f) => { returnToIdRef.current = null; pendingReturnId.current = null; setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
   const closeProfile = () => {
