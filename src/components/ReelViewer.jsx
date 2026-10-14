@@ -50,39 +50,42 @@ export default function ReelViewer({ reels, index, onClose, onChange, onOpenProf
   if (!reel) return null
 
   return (
-    <div
-      className="reel-viewer"
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
-    >
-      <video
-        ref={videoRef}
-        src={reel.src}
-        poster={reel.poster}
-        muted={muted}
-        loop
-        playsInline
-        autoPlay
-      />
-      <button className="reel-viewer-close" onPointerUp={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose() }}>✕</button>
-      <button
-        className="reel-viewer-mute"
-        onPointerUp={(e) => e.stopPropagation()}
-        onClick={(e) => { e.stopPropagation(); setMuted(m => !m) }}
-      >{muted ? '🔇' : '🔊'}</button>
-      {paused && <div className="reel-viewer-pause">▶</div>}
-      <div className="reel-viewer-meta">
-        <div className="reel-viewer-name">{profile?.name} <span>{profile ? `${profile.age} · ${profile.occupation}` : ''}</span></div>
-        <p>{reel.caption}</p>
-        {profile && (
-          <button
-            className="reel-viewer-profile"
-            onPointerUp={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); onOpenProfile(profile) }}
-          >查看檔案</button>
-        )}
+    <div className="reel-viewer" onClick={onClose}>
+      <div
+        className="reel-viewer-frame"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+      >
+        <video
+          ref={videoRef}
+          src={reel.src}
+          poster={reel.poster}
+          muted={muted}
+          loop
+          playsInline
+          autoPlay
+        />
+        <button className="reel-viewer-close" onPointerUp={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose() }}>✕</button>
+        <button
+          className="reel-viewer-mute"
+          onPointerUp={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); setMuted(m => !m) }}
+        >{muted ? '🔇' : '🔊'}</button>
+        {paused && <div className="reel-viewer-pause">▶</div>}
+        <div className="reel-viewer-meta">
+          <div className="reel-viewer-name">{profile?.name} <span>{profile ? `${profile.age} · ${profile.occupation}` : ''}</span></div>
+          <p>{reel.caption}</p>
+          {profile && (
+            <button
+              className="reel-viewer-profile"
+              onPointerUp={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onOpenProfile(profile) }}
+            >查看檔案</button>
+          )}
+        </div>
+        <div className="reel-viewer-hint">{index + 1} / {reels.length} · 上滑下一個</div>
       </div>
-      <div className="reel-viewer-hint">{index + 1} / {reels.length} · 上滑下一個</div>
     </div>
   )
 }

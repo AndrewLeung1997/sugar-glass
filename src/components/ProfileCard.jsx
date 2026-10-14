@@ -45,7 +45,7 @@ export default function ProfileCard({ profile, onOpen, isFavorite, onToggleFav }
   }
 
   return (
-    <div className="card glass">
+    <div className="card glass" data-profile-id={profile.id}>
       <div
         className="photo"
         onPointerDown={onPointerDown}

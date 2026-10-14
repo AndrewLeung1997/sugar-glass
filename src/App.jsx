@@ -26,7 +26,8 @@ export default function App() {
   const [activeReel, setActiveReel] = useState(null) // 全屏 Reel 索引
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
-  const scrollPosRef = useRef(0)  // 記住開詳情頁前嘅捲動位置
+  const returnToIdRef = useRef(null) // 返回主頁時捲去呢張 card
+  const pendingReturnId = useRef(null)
 
   // 列表資料（唔係 hook，但放喺 return 之前計算）
   const source = view === 'favorites'
@@ -37,15 +38,6 @@ export default function App() {
   const feed = view === 'home' ? interleaveFeed(items, REELS, 3) : items.map(p => ({ kind: 'profile', profile: p, key: p.id }))
   const profileOfReel = (reel) => PROFILES.find(p => p.id === reel.profileId)
 
-  // 進入詳情頁捲返頂部；返回時恢復原本捲動位置（唔重設 visibleCount）
-  useEffect(() => {
-    if (selected) {
-      window.scrollTo(0, 0)
-    } else if (scrollPosRef.current > 0) {
-      window.scrollTo(0, scrollPosRef.current)
-    }
-  }, [selected])
-
   // 監聽捲動 — 超過 40px 就收縮大標題（iOS large title 行為）
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -53,11 +45,47 @@ export default function App() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // 詳情 overlay 打開時鎖住底層捲動，返回時列表位置唔會被帶走
+  useEffect(() => {
+    if (!selected) return
+    const html = document.documentElement
+    const prevBody = document.body.style.overflow
+    const prevHtml = html.style.overflow
+    document.body.style.overflow = 'hidden'
+    html.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevBody
+      html.style.overflow = prevHtml
+    }
+  }, [selected])
+
+  // 返回 / 撳主頁之後，等列表重新顯示再捲去嗰張 card
+  useEffect(() => {
+    if (selected || closing) return
+    const id = pendingReturnId.current
+    if (!id) return
+    const idx = source.findIndex(p => p.id === id)
+    if (idx < 0) {
+      pendingReturnId.current = null
+      return
+    }
+    if (idx >= visibleCount) {
+      setVisibleCount(idx + 1)
+      return
+    }
+    const el = document.querySelector(`[data-profile-id="${id}"]`)
+    if (!el) return
+    pendingReturnId.current = null
+    const r = el.getBoundingClientRect()
+    const inView = r.bottom > 120 && r.top < window.innerHeight - 80
+    if (!inView) el.scrollIntoView({ block: 'center', behavior: 'auto' })
+  }, [selected, closing, visibleCount, source, view])
+
   // IntersectionObserver — sentinel 進入視窗就載入更多
   // dep 含 visibleCount + selected：返回詳情頁時重新 observe 新 sentinel（舊元素已 unmount）
   useEffect(() => {
     const el = sentinelRef.current
-    if (!el || !hasMore) return
+    if (!el || !hasMore || selected) return
     const io = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         setIsLoading(true)
@@ -69,13 +97,40 @@ export default function App() {
     return () => io.disconnect()
   }, [hasMore, source.length, visibleCount, selected])
 
-  const changeFilter = (f) => { setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
-  const switchView = (v) => { setView(v); setSelected(null); setClosing(false); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
-
-  const openProfile = (p) => { scrollPosRef.current = window.scrollY; setClosing(false); setAnimDone(false); setSelected(p) }
+  const changeFilter = (f) => { returnToIdRef.current = null; pendingReturnId.current = null; setFilter(f); setVisibleCount(PAGE_SIZE); window.scrollTo(0, 0) }
   const closeProfile = () => {
+    const id = returnToIdRef.current
     setClosing(true)
-    setTimeout(() => { setSelected(null); setClosing(false); setAnimDone(false) }, 340)
+    setTimeout(() => {
+      setSelected(null)
+      setClosing(false)
+      setAnimDone(false)
+      if (id) pendingReturnId.current = id
+      returnToIdRef.current = null
+    }, 280)
+  }
+  const switchView = (v) => {
+    // 詳情頁撳「主頁」＝返回：關 overlay，留低列表，去返嗰張 card
+    if (v === 'home' && selected) {
+      if (view !== 'home') setView('home')
+      closeProfile()
+      return
+    }
+    if (v === view && !selected) return
+    returnToIdRef.current = null
+    pendingReturnId.current = null
+    setView(v)
+    setSelected(null)
+    setClosing(false)
+    setAnimDone(false)
+    setVisibleCount(PAGE_SIZE)
+    window.scrollTo(0, 0)
+  }
+  const openProfile = (p) => {
+    returnToIdRef.current = p.id
+    setClosing(false)
+    setAnimDone(false)
+    setSelected(p)
   }
   const selectedIdx = selected ? source.findIndex(p => p.id === selected.id) : -1
   const prevProfile = selectedIdx > 0 ? source[selectedIdx - 1] : null
@@ -84,9 +139,11 @@ export default function App() {
     if (!p) return
     const i = source.findIndex(x => x.id === p.id)
     if (i >= visibleCount) setVisibleCount(i + 1)
+    returnToIdRef.current = p.id
     setAnimDone(true)
     setSelected(p)
-    window.scrollTo(0, 0)
+    const overlay = document.querySelector('.detail-overlay')
+    if (overlay) overlay.scrollTop = 0
   }
 
   // ===== early returns（喺所有 hooks 之後）=====
@@ -96,36 +153,8 @@ export default function App() {
     return <Landing onEnter={() => { setShowLanding(false); window.scrollTo(0, 0) }} />
   }
 
-  // 詳情頁 — 任何 view 都可以進入
-  if (selected) {
-    return (
-      <div className="app">
-        <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
-        <div
-          className={`app-inner app-with-bar ${closing ? 'detail-pop-out' : ''} ${!animDone && !closing ? 'detail-pop' : ''}`}
-          onAnimationEnd={() => { if (!closing) setAnimDone(true) }}
-        >
-          <div className="back glass" onClick={closeProfile}>
-            ← 返回
-          </div>
-          <ProfilePage
-            profile={selected}
-            isFavorite={isFavorite}
-            onToggleFav={toggleFavorite}
-            onBack={closeProfile}
-            prevProfile={prevProfile}
-            nextProfile={nextProfile}
-            onPrev={() => goAdjacent(prevProfile)}
-            onNext={() => goAdjacent(nextProfile)}
-          />
-        </div>
-        <BottomBar view={view} onChange={switchView} />
-      </div>
-    )
-  }
-
   // 會員中心
-  if (view === 'member') {
+  if (view === 'member' && !selected) {
     return (
       <div className="app">
         <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
@@ -165,6 +194,7 @@ export default function App() {
     <div className="app">
       <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
 
+      <div className={selected ? 'home-hold' : undefined} aria-hidden={!!selected}>
       <div className={`header-sticky ${scrolled ? 'compact' : ''}`}>
         <div className="header-inner">
           <div className="topbar">
@@ -222,6 +252,31 @@ export default function App() {
           </>
         )}
       </div>
+
+      </div>
+
+      {selected && (
+        <div
+          className={`detail-overlay ${closing ? 'detail-pop-out' : ''} ${!animDone && !closing ? 'detail-pop' : ''}`}
+          onAnimationEnd={() => { if (!closing) setAnimDone(true) }}
+        >
+          <div className="app-inner app-with-bar">
+            <div className="back glass" onClick={closeProfile}>
+              ← 返回
+            </div>
+            <ProfilePage
+              profile={selected}
+              isFavorite={isFavorite}
+              onToggleFav={toggleFavorite}
+              onBack={closeProfile}
+              prevProfile={prevProfile}
+              nextProfile={nextProfile}
+              onPrev={() => goAdjacent(prevProfile)}
+              onNext={() => goAdjacent(nextProfile)}
+            />
+          </div>
+        </div>
+      )}
 
       <BottomBar view={view} onChange={switchView} />
       {activeReel !== null && (
