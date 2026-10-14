@@ -152,6 +152,8 @@ function seed(id) {
   return [...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0)
 }
 
+const toIn = (cm) => `${Math.round(cm / 2.54)}吋`
+
 function enrich(p) {
   const n = seed(p.id)
   return {
@@ -159,7 +161,9 @@ function enrich(p) {
     figure: p.figure || {
       height: `${156 + (n % 16)}cm`,
       weight: `${43 + (n % 12)}kg`,
-      bust: `${78 + (n % 12)}cm`,
+      bust: toIn(78 + (n % 12)),
+      waist: toIn(56 + (n % 10)),
+      hip: toIn(84 + (n % 12)),
     },
     education: p.education || EDU[n % EDU.length],
     skills: p.skills || [p.occupation, ...(p.tags || []).slice(0, 2)].filter(Boolean),

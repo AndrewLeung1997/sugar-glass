@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { PROFILES, FILTERS } from './data.js'
-import { REELS, interleaveFeed } from './reels.js'
+import { REELS, interleaveFeed, desktopFeedSections } from './reels.js'
 import ProfileCard from './components/ProfileCard.jsx'
 import ProfilePage from './components/ProfilePage.jsx'
 import ReelCard from './components/ReelCard.jsx'
@@ -9,12 +9,27 @@ import ReelRail from './components/ReelRail.jsx'
 import BottomBar from './components/BottomBar.jsx'
 import Landing from './components/Landing.jsx'
 import { useFavorites } from './hooks/useFavorites.js'
+import { useScreenshotGuard } from './hooks/useScreenshotGuard.js'
 
 const PAGE_SIZE = 12
+const MOBILE_MQ = '(max-width: 720px)'
+
+function useIsMobile() {
+  const [mobile, setMobile] = useState(() => window.matchMedia(MOBILE_MQ).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_MQ)
+    const on = () => setMobile(mq.matches)
+    on()
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
+  return mobile
+}
 
 export default function App() {
   // ===== 所有 useState / useRef 必須喺任何 early return 之前 =====
   const [showLanding, setShowLanding] = useState(true)
+  const isMobile = useIsMobile()
   const [view, setView] = useState('home')          // home | favorites | member
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')
@@ -25,6 +40,8 @@ export default function App() {
   const [animDone, setAnimDone] = useState(false)   // 詳情頁進入動畫完成（移除 class 避免 containing block）
   const [activeReel, setActiveReel] = useState(null) // 全屏 Reel 索引
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
+  const { warning, flash } = useScreenshotGuard()
+  const ssBanner = warning ? <div className="ss-warning" key={flash}>{warning}</div> : null
   const sentinelRef = useRef(null)
   const returnToIdRef = useRef(null) // 返回主頁時捲去呢張 card
   const pendingReturnId = useRef(null)
@@ -35,8 +52,14 @@ export default function App() {
     : (filter === '全部' ? PROFILES : PROFILES.filter(p => p.stats.lifestyle === filter))
   const items = source.slice(0, visibleCount)
   const hasMore = visibleCount < source.length
-  const feed = view === 'home' ? interleaveFeed(items, REELS, 3) : items.map(p => ({ kind: 'profile', profile: p, key: p.id }))
+  const feed = view === 'home' && isMobile
+    ? interleaveFeed(items, REELS, 3)
+    : items.map(p => ({ kind: 'profile', profile: p, key: p.id }))
+  const desktopSections = view === 'home' && !isMobile
+    ? desktopFeedSections(items, REELS, 3)
+    : [{ kind: 'profiles', items, key: 'p-all' }]
   const profileOfReel = (reel) => PROFILES.find(p => p.id === reel.profileId)
+  const openReel = (reel) => setActiveReel(REELS.findIndex(r => r.id === reel.id))
 
   // 監聽捲動 — 超過 40px 就收縮大標題（iOS large title 行為）
   useEffect(() => {
@@ -157,13 +180,19 @@ export default function App() {
 
   // Landing page — 首次進入時顯示
   if (showLanding) {
-    return <Landing onEnter={() => { setShowLanding(false); window.scrollTo(0, 0) }} />
+    return (
+      <>
+        {ssBanner}
+        <Landing onEnter={() => { setShowLanding(false); window.scrollTo(0, 0) }} />
+      </>
+    )
   }
 
   // 會員中心
   if (view === 'member' && !selected) {
     return (
       <div className="app">
+        {ssBanner}
         <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
         <div className="header-sticky">
           <div className="header-inner">
@@ -199,6 +228,7 @@ export default function App() {
   // ===== 主頁 / 我的收藏 =====
   return (
     <div className="app">
+      {ssBanner}
       <div className="orbs"><div className="orb a"/><div className="orb b"/><div className="orb c"/></div>
 
       <div className={selected ? 'home-hold' : undefined} aria-hidden={!!selected}>
@@ -230,14 +260,14 @@ export default function App() {
       )}
 
       <div className="app-inner app-with-bar">
-        {view === 'home' && (
+        {view === 'home' && isMobile && (
           <ReelRail reels={REELS} profileOf={profileOfReel} onOpen={setActiveReel} />
         )}
         {source.length === 0 ? (
           <div className="empty glass">
             {view === 'favorites' ? '尚未收藏任何對象 ♡' : '沒有符合的配對對象'}
           </div>
-        ) : (
+        ) : isMobile ? (
           <>
             <div className="grid">
               {feed.map(item => item.kind === 'reel' ? (
@@ -245,12 +275,41 @@ export default function App() {
                   key={item.key}
                   reel={item.reel}
                   profile={profileOfReel(item.reel)}
-                  onOpen={() => setActiveReel(REELS.findIndex(r => r.id === item.reel.id))}
+                  onOpen={() => openReel(item.reel)}
                 />
               ) : (
                 <ProfileCard key={item.key} profile={item.profile} onOpen={() => openProfile(item.profile)} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
               ))}
             </div>
+
+            <div ref={sentinelRef} className="load-more">
+              {hasMore && isLoading && <div className="lm-spinner glass">載入中…</div>}
+              {!hasMore && <div className="lm-end">已顯示全部 {source.length} 位</div>}
+            </div>
+          </>
+        ) : (
+          <>
+            {desktopSections.map(sec => sec.kind === 'reel-band' ? (
+              <section key={sec.key} className="reel-band">
+                <div className="reel-band-title">Reels</div>
+                <div className="reel-band-row">
+                  {sec.reels.map(reel => (
+                    <ReelCard
+                      key={reel.id}
+                      reel={reel}
+                      profile={profileOfReel(reel)}
+                      onOpen={() => openReel(reel)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : (
+              <div key={sec.key} className="grid">
+                {sec.items.map(p => (
+                  <ProfileCard key={p.id} profile={p} onOpen={() => openProfile(p)} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
+                ))}
+              </div>
+            ))}
 
             <div ref={sentinelRef} className="load-more">
               {hasMore && isLoading && <div className="lm-spinner glass">載入中…</div>}

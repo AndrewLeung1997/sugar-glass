@@ -77,21 +77,25 @@ export default function ProfileCard({ profile, onOpen, isFavorite, onToggleFav }
           <div className="name">{profile.name} <span>{profile.age} · {profile.city}</span></div>
           <div className="tag">{profile.occupation} · {profile.tagline}</div>
           <div className="stats">
-            <div className="stat"><b>{fig.height}</b><small>身高</small></div>
-            <div className="stat"><b>{fig.weight}</b><small>體重</small></div>
             <div className="stat"><b>{fig.bust}</b><small>胸圍</small></div>
+            <div className="stat"><b>{fig.waist}</b><small>腰圍</small></div>
+            <div className="stat"><b>{fig.hip}</b><small>臀圍</small></div>
           </div>
         </div>
         <button
           className={`card-more-btn ${openMore ? 'open' : ''}`}
           onClick={(e) => { e.stopPropagation(); setOpenMore(v => !v) }}
           aria-expanded={openMore}
-          aria-label={openMore ? '收起詳情' : '展開詳情'}
+          aria-label={openMore ? '收起身高體重' : '顯示身高體重'}
         >
           <span className="card-more-arrow">⌄</span>
         </button>
         {openMore && (
           <div className="card-more">
+            <div className="stats stats-more">
+              <div className="stat"><b>{fig.height}</b><small>身高</small></div>
+              <div className="stat"><b>{fig.weight}</b><small>體重</small></div>
+            </div>
             <div className="card-more-row">
               <small>教育程度</small>
               <b>{profile.education}</b>

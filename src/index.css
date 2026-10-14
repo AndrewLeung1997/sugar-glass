@@ -124,7 +124,7 @@ body {
 .header-sticky.compact .brand small { opacity: 0; max-height: 0; margin-top: 0; }
 
 /* 列表卡片 */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 22px; align-items: start; }
 
 /* 詳情頁 popup 動畫 */
 .detail-pop {
@@ -190,6 +190,7 @@ body {
 .card .name span { font-size: 13px; font-weight: 400; color: var(--text-soft); }
 .card .tag { margin-top: 6px; font-size: 13px; color: var(--text-soft); line-height: 1.5; }
 .card .stats { display: flex; gap: 8px; margin-top: 14px; }
+.card .stats.stats-more { margin-top: 0; }
 .card-more-btn {
   width: 100%; margin-top: 10px; padding: 6px 0 2px; border: none; background: none;
   cursor: pointer; color: var(--text-soft); display: flex; justify-content: center;
@@ -359,13 +360,22 @@ body {
 /* 統計條 — 與大圖融合 */
 .lux-stats {
   display: flex; align-items: center; justify-content: center; gap: 0; padding: 26px 32px;
-  background: #1a1a1a; border-radius: 0 0 var(--radius) var(--radius);
-  box-shadow: var(--shadow-lg);
+  background: #1a1a1a; border-radius: 0; box-shadow: none;
 }
 .lux-stat { text-align: center; padding: 0 28px; }
 .lux-stat b { display: block; font-family: var(--serif); font-size: 26px; font-weight: 700; color: #fff; }
 .lux-stat small { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-soft); margin-top: 4px; display: block; }
 .lux-div { width: 1px; height: 36px; background: rgba(184,147,90,0.3); }
+.lux-more-btn {
+  margin: 0; padding: 10px 0 8px; background: #1a1a1a;
+  border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow-lg);
+}
+.lux-more-btn .card-more-arrow { color: rgba(255,255,255,0.55); }
+.lux-more-btn.open { border-radius: 0; box-shadow: none; }
+.lux-stats-more {
+  margin-top: 0; border-radius: 0 0 var(--radius) var(--radius);
+  padding-top: 8px; box-shadow: var(--shadow-lg); animation: card-more-in .22s ease;
+}
 
 /* 區段標題 */
 .lux-h {
@@ -404,9 +414,17 @@ body {
   border-radius: 12px; mix-blend-mode: overlay;
 }
 .lux-shot, .lb-img-wrap, .lb-img-wrap img { user-select: none; -webkit-user-drag: none; }
-.detail-lux.is-guarded .lux-shot { filter: blur(22px) saturate(0.6); transform: none; }
-.detail-lux.is-guarded .lb-img-wrap img { filter: blur(26px) saturate(0.5); }
-.detail-lux.is-guarded .lux-wm { opacity: 0.25; }
+.ss-black .card .photo::before,
+.ss-black .lux-shot::before,
+.ss-black .lb-img-wrap::before,
+.ss-black .reel-media::before,
+.ss-black .reel-viewer-frame::before,
+.ss-black .reel-rail-item::before {
+  content: ''; position: absolute; inset: 0; background: #000;
+  z-index: 25; pointer-events: none; border-radius: inherit;
+}
+.ss-black .lux-hero-bg { background: #000 !important; background-image: none !important; }
+.ss-black .reel-rail-item { position: relative; }
 
 /* 截圖警告 toast */
 .ss-warning {
@@ -720,6 +738,25 @@ body {
   pointer-events: none; top: 54px;
 }
 .reel-rail-name { font-size: 11px; color: var(--text); max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Desktop：Reel 全寬橫帶，唔同 profile 共 grid */
+.reel-band { margin: 10px 0 28px; }
+.reel-band-title {
+  font-family: var(--serif); font-size: 13px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px; font-weight: 700;
+}
+.reel-band-row {
+  display: flex; gap: 16px; overflow-x: auto; padding-bottom: 6px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.reel-band-row::-webkit-scrollbar { display: none; }
+.reel-band .reel-card {
+  flex: 0 0 198px; width: 198px; margin: 0;
+}
+.reel-band .reel-card:hover { transform: translateY(-4px); }
+.reel-band .reel-media { width: 100%; aspect-ratio: 9 / 16; }
+.reel-band .reel-name { font-size: 15px; }
+.reel-band .reel-caption { font-size: 12px; }
 
 /* IG-style Reels */
 .reel-card { cursor: pointer; }

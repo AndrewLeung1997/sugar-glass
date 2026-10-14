@@ -11,12 +11,13 @@ export function getViewerId() {
   return id
 }
 
+const SS_MSG = '⚠ 偵測到截圖，相片已遮蔽'
+
 /**
  * 防截圖守衛
  * - 偵測截圖快捷鍵（PrintScreen / Mac ⌘⇧3-6 / Ctrl+PrintScreen）
- * - 視窗失焦時模糊（用戶可能開緊截圖工具）
- * - 分頁隱藏時模糊
- * 回傳 { guarded, warning, flash } 供元件控制模糊同警告
+ * - 視窗失焦或分頁隱藏時蓋黑相片（可能開緊截圖工具）
+ * 回傳 { guarded, warning, flash }；同時喺 <html> 加上 ss-black
  */
 export function useScreenshotGuard() {
   const [guarded, setGuarded] = useState(false)
@@ -29,21 +30,29 @@ export function useScreenshotGuard() {
     setWarning(msg)
     setFlash(f => f + 1)
     clearTimeout(timer.current)
-    timer.current = setTimeout(() => setGuarded(false), 2800)
+    timer.current = setTimeout(() => {
+      setGuarded(false)
+      setWarning('')
+    }, 2800)
   }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('ss-black', guarded)
+    return () => document.documentElement.classList.remove('ss-black')
+  }, [guarded])
 
   useEffect(() => {
     const onKeyDown = (e) => {
       const k = e.key
-      if (k === 'PrintScreen') { e.preventDefault(); trigger('⚠ 偵測到截圖操作，相片已即時模糊') }
+      if (k === 'PrintScreen') { e.preventDefault(); trigger(SS_MSG) }
       if (e.metaKey && e.shiftKey && ['3', '4', '5', '6'].includes(k)) {
-        e.preventDefault(); trigger('⚠ 偵測到截圖操作，相片已即時模糊')
+        e.preventDefault(); trigger(SS_MSG)
       }
-      if (e.ctrlKey && k === 'PrintScreen') { e.preventDefault(); trigger('⚠ 偵測到截圖操作，相片已即時模糊') }
+      if (e.ctrlKey && k === 'PrintScreen') { e.preventDefault(); trigger(SS_MSG) }
     }
     // 部分瀏覽器 PrintScreen 只喺 keyup 觸發
     const onKeyUp = (e) => {
-      if (e.key === 'PrintScreen') trigger('⚠ 偵測到截圖操作，相片已即時模糊')
+      if (e.key === 'PrintScreen') trigger(SS_MSG)
     }
     const onBlur = () => setGuarded(true)
     const onFocus = () => { setGuarded(false); setWarning('') }
@@ -61,6 +70,7 @@ export function useScreenshotGuard() {
       window.removeEventListener('focus', onFocus)
       document.removeEventListener('visibilitychange', onVis)
       clearTimeout(timer.current)
+      document.documentElement.classList.remove('ss-black')
     }
   }, [trigger])
 

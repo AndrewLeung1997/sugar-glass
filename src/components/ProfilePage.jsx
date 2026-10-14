@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useImageLoaded } from '../hooks/useImageLoaded.js'
-import { useScreenshotGuard, getViewerId, watermarkDataUri } from '../hooks/useScreenshotGuard.js'
+import { getViewerId, watermarkDataUri } from '../hooks/useScreenshotGuard.js'
 
 function LuxShot({ src, onOpen, wm }) {
   const loaded = useImageLoaded(src)
@@ -21,9 +21,10 @@ function LuxShot({ src, onOpen, wm }) {
 
 export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, prevProfile, nextProfile, onPrev, onNext }) {
   const [lightbox, setLightbox] = useState(null)
+  const [openMore, setOpenMore] = useState(false)
   const heroLoaded = useImageLoaded(profile.cover)
+  const fig = profile.figure || {}
   const fav = isFavorite ? isFavorite(profile.id) : false
-  const { guarded, warning, flash } = useScreenshotGuard()
   const viewerId = getViewerId()
   const today = new Date().toISOString().slice(0, 10)
   const wmText = `${viewerId} · ${profile.name} · ${today}`
@@ -35,7 +36,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, 
   const prev = () => setLightbox(i => (i - 1 + profile.photos.length) % profile.photos.length)
   const next = () => setLightbox(i => (i + 1) % profile.photos.length)
 
-  useEffect(() => { setLightbox(null) }, [profile.id])
+  useEffect(() => { setLightbox(null); setOpenMore(false) }, [profile.id])
 
   useEffect(() => {
     if (lightbox === null) return
@@ -55,11 +56,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, 
   // 統一 2 欄 grid，所有相片相同比例
 
   return (
-    <div className={`detail-lux ${guarded ? 'is-guarded' : ''}`}>
-      {/* 截圖警告 */}
-      {warning && (
-        <div className="ss-warning" key={flash}>{warning}</div>
-      )}
+    <div className="detail-lux">
       {/* 全屏大圖 hero */}
       <section className="lux-hero">
         <div className="lux-hero-bg" style={{ backgroundImage: heroLoaded ? `url(${profile.cover})` : 'none' }} />
@@ -73,12 +70,29 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, 
         </div>
       </section>
 
-      {/* 統計條 */}
+      {/* 三圍；箭嘴先出身高體重 */}
       <section className="lux-stats">
-        <div className="lux-stat"><b>{profile.stats.budget}</b><small>預算</small></div>
+        <div className="lux-stat"><b>{fig.bust}</b><small>胸圍</small></div>
         <span className="lux-div" />
-        <div className="lux-stat"><b>{profile.stats.lifestyle}</b><small>風格</small></div>
+        <div className="lux-stat"><b>{fig.waist}</b><small>腰圍</small></div>
+        <span className="lux-div" />
+        <div className="lux-stat"><b>{fig.hip}</b><small>臀圍</small></div>
       </section>
+      <button
+        className={`card-more-btn lux-more-btn ${openMore ? 'open' : ''}`}
+        onClick={() => setOpenMore(v => !v)}
+        aria-expanded={openMore}
+        aria-label={openMore ? '收起身高體重' : '顯示身高體重'}
+      >
+        <span className="card-more-arrow">⌄</span>
+      </button>
+      {openMore && (
+        <section className="lux-stats lux-stats-more">
+          <div className="lux-stat"><b>{fig.height}</b><small>身高</small></div>
+          <span className="lux-div" />
+          <div className="lux-stat"><b>{fig.weight}</b><small>體重</small></div>
+        </section>
+      )}
 
       {/* 關於 */}
       <section className="lux-about">
