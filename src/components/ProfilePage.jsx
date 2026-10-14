@@ -19,7 +19,7 @@ function LuxShot({ src, onOpen, wm }) {
   )
 }
 
-export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }) {
+export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, prevProfile, nextProfile, onPrev, onNext }) {
   const [lightbox, setLightbox] = useState(null)
   const heroLoaded = useImageLoaded(profile.cover)
   const fav = isFavorite ? isFavorite(profile.id) : false
@@ -34,6 +34,8 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
   const close = () => setLightbox(null)
   const prev = () => setLightbox(i => (i - 1 + profile.photos.length) % profile.photos.length)
   const next = () => setLightbox(i => (i + 1) % profile.photos.length)
+
+  useEffect(() => { setLightbox(null) }, [profile.id])
 
   useEffect(() => {
     if (lightbox === null) return
@@ -104,6 +106,25 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack }
           {fav ? '♥ 已收藏' : '♡ 收藏'}
         </button>
       </div>
+
+      <nav className="detail-pager">
+        <button
+          className="detail-pager-btn prev"
+          disabled={!prevProfile}
+          onClick={onPrev}
+        >
+          <span className="detail-pager-dir">‹ 上一個</span>
+          <span className="detail-pager-name">{prevProfile ? `${prevProfile.name} · ${prevProfile.age}` : '—'}</span>
+        </button>
+        <button
+          className="detail-pager-btn next"
+          disabled={!nextProfile}
+          onClick={onNext}
+        >
+          <span className="detail-pager-dir">下一個 ›</span>
+          <span className="detail-pager-name">{nextProfile ? `${nextProfile.name} · ${nextProfile.age}` : '—'}</span>
+        </button>
+      </nav>
 
       {/* Lightbox */}
       {lightbox !== null && (

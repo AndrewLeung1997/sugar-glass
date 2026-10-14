@@ -2,7 +2,7 @@
 // 照片用 GenerateImage 生成嘅可愛日本女性相（3:4 直向）
 const img = (n) => `${import.meta.env.BASE_URL}${n}.jpg`
 
-export const PROFILES = [
+const RAW_PROFILES = [
   { id: 'p87', name: 'Nanami', age: 27, city: '紅磡', occupation: '小提琴家', tagline: '弦樂與夜色', bio: '室樂團小提琴手，巡演過維也納與布拉格。舞台之外愛一個人走夜路回家。期待一段懂休止符、也懂掌聲的關係。', cover: img('p87'), photos: [img('p87'), img('p87a'), img('p87b')], tags: ['小提琴', '古典樂', '維也納', '紅酒', '夜色'], verified: true, stats: { lifestyle: '奢華', budget: '18K+' } },
   { id: 'p88', name: 'Kiyomi', age: 31, city: '中環', occupation: '侍酒師', tagline: '酒窖與年份', bio: '米其林餐廳侍酒師，記住每一瓶酒的故事。最愛勃艮第的雨季。尋找一個也懂等待、願意一起醒酒的人。', cover: img('p88'), photos: [img('p88'), img('p88a'), img('p88b')], tags: ['侍酒', '勃艮第', '米其林', '旅行', '藝術'], verified: true, stats: { lifestyle: '頂級', budget: '28K+' } },
   { id: 'p89', name: 'Honoka', age: 28, city: '粉嶺', occupation: '馬術教練', tagline: '馬場與清晨', bio: '在粉嶺教馬術八年，最愛清晨馬場的霧。相信人與馬之間的安靜。期待一段也願意早起、一起出發的人。', cover: img('p89'), photos: [img('p89'), img('p89a'), img('p89b')], tags: ['馬術', '清晨', '戶外', '英國', '紅茶'], verified: true, stats: { lifestyle: '奢華', budget: '22K+' } },
@@ -146,4 +146,26 @@ export const PROFILES = [
   { id: 'p82', name: 'Koharu', age: 25, city: '上環', occupation: '瑜伽導師', tagline: '白與靜', bio: '在白色工作室教瑜伽，相信空是另一種滿。下課愛一杯茶與一本書。期待一段也懂安靜的人。', cover: img('p82'), photos: [img('p82'), img('p82a'), img('p82b')], tags: ['瑜伽', '茶', '閱讀', '身心靈', '貓'], verified: true, stats: { lifestyle: '文青', budget: '9K+' } },
 ]
 
+const EDU = ['高中', '專上', '大學', '學士', '碩士', '海外留學']
+
+function seed(id) {
+  return [...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0)
+}
+
+function enrich(p) {
+  const n = seed(p.id)
+  return {
+    ...p,
+    figure: p.figure || {
+      height: `${156 + (n % 16)}cm`,
+      weight: `${43 + (n % 12)}kg`,
+      bust: `${78 + (n % 12)}cm`,
+    },
+    education: p.education || EDU[n % EDU.length],
+    skills: p.skills || [p.occupation, ...(p.tags || []).slice(0, 2)].filter(Boolean),
+    interests: p.interests || p.tags || [],
+  }
+}
+
+export const PROFILES = RAW_PROFILES.map(enrich)
 export const FILTERS = ['全部', '奢華', '高端', '文青', '頂級', '簡約']

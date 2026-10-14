@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { PROFILES, FILTERS } from './data.js'
+import { REELS, interleaveFeed } from './reels.js'
 import ProfileCard from './components/ProfileCard.jsx'
 import ProfilePage from './components/ProfilePage.jsx'
+import ReelCard from './components/ReelCard.jsx'
+import ReelViewer from './components/ReelViewer.jsx'
+import ReelRail from './components/ReelRail.jsx'
 import BottomBar from './components/BottomBar.jsx'
 import Landing from './components/Landing.jsx'
 import { useFavorites } from './hooks/useFavorites.js'
@@ -10,7 +14,7 @@ const PAGE_SIZE = 12
 
 export default function App() {
   // ===== 所有 useState / useRef 必須喺任何 early return 之前 =====
-  const [showLanding, setShowLanding] = useState(false)
+  const [showLanding, setShowLanding] = useState(true)
   const [view, setView] = useState('home')          // home | favorites | member
   const [selected, setSelected] = useState(null)
   const [filter, setFilter] = useState('全部')
@@ -19,6 +23,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false) // infinite scroll 載入中
   const [closing, setClosing] = useState(false)     // 詳情頁退出動畫
   const [animDone, setAnimDone] = useState(false)   // 詳情頁進入動畫完成（移除 class 避免 containing block）
+  const [activeReel, setActiveReel] = useState(null) // 全屏 Reel 索引
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
   const sentinelRef = useRef(null)
   const scrollPosRef = useRef(0)  // 記住開詳情頁前嘅捲動位置
@@ -29,6 +34,8 @@ export default function App() {
     : (filter === '全部' ? PROFILES : PROFILES.filter(p => p.stats.lifestyle === filter))
   const items = source.slice(0, visibleCount)
   const hasMore = visibleCount < source.length
+  const feed = view === 'home' ? interleaveFeed(items, REELS, 3) : items.map(p => ({ kind: 'profile', profile: p, key: p.id }))
+  const profileOfReel = (reel) => PROFILES.find(p => p.id === reel.profileId)
 
   // 進入詳情頁捲返頂部；返回時恢復原本捲動位置（唔重設 visibleCount）
   useEffect(() => {
@@ -70,6 +77,17 @@ export default function App() {
     setClosing(true)
     setTimeout(() => { setSelected(null); setClosing(false); setAnimDone(false) }, 340)
   }
+  const selectedIdx = selected ? source.findIndex(p => p.id === selected.id) : -1
+  const prevProfile = selectedIdx > 0 ? source[selectedIdx - 1] : null
+  const nextProfile = selectedIdx >= 0 && selectedIdx < source.length - 1 ? source[selectedIdx + 1] : null
+  const goAdjacent = (p) => {
+    if (!p) return
+    const i = source.findIndex(x => x.id === p.id)
+    if (i >= visibleCount) setVisibleCount(i + 1)
+    setAnimDone(true)
+    setSelected(p)
+    window.scrollTo(0, 0)
+  }
 
   // ===== early returns（喺所有 hooks 之後）=====
 
@@ -90,7 +108,16 @@ export default function App() {
           <div className="back glass" onClick={closeProfile}>
             ← 返回
           </div>
-          <ProfilePage profile={selected} isFavorite={isFavorite} onToggleFav={toggleFavorite} onBack={closeProfile} />
+          <ProfilePage
+            profile={selected}
+            isFavorite={isFavorite}
+            onToggleFav={toggleFavorite}
+            onBack={closeProfile}
+            prevProfile={prevProfile}
+            nextProfile={nextProfile}
+            onPrev={() => goAdjacent(prevProfile)}
+            onNext={() => goAdjacent(nextProfile)}
+          />
         </div>
         <BottomBar view={view} onChange={switchView} />
       </div>
@@ -166,6 +193,9 @@ export default function App() {
       )}
 
       <div className="app-inner app-with-bar">
+        {view === 'home' && (
+          <ReelRail reels={REELS} profileOf={profileOfReel} onOpen={setActiveReel} />
+        )}
         {source.length === 0 ? (
           <div className="empty glass">
             {view === 'favorites' ? '尚未收藏任何對象 ♡' : '沒有符合的配對對象'}
@@ -173,8 +203,15 @@ export default function App() {
         ) : (
           <>
             <div className="grid">
-              {items.map(p => (
-                <ProfileCard key={p.id} profile={p} onOpen={() => openProfile(p)} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
+              {feed.map(item => item.kind === 'reel' ? (
+                <ReelCard
+                  key={item.key}
+                  reel={item.reel}
+                  profile={profileOfReel(item.reel)}
+                  onOpen={() => setActiveReel(REELS.findIndex(r => r.id === item.reel.id))}
+                />
+              ) : (
+                <ProfileCard key={item.key} profile={item.profile} onOpen={() => openProfile(item.profile)} isFavorite={isFavorite} onToggleFav={toggleFavorite} />
               ))}
             </div>
 
@@ -187,6 +224,16 @@ export default function App() {
       </div>
 
       <BottomBar view={view} onChange={switchView} />
+      {activeReel !== null && (
+        <ReelViewer
+          reels={REELS}
+          index={activeReel}
+          onClose={() => setActiveReel(null)}
+          onChange={setActiveReel}
+          profileOf={profileOfReel}
+          onOpenProfile={(p) => { setActiveReel(null); openProfile(p) }}
+        />
+      )}
     </div>
   )
 }
