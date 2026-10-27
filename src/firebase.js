@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyADnaXydXBmyqXu3lauauF2-qpzCN8Xwb0',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'dating-high-end.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'dating-high-end',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'dating-high-end.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '770592004990',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:770592004990:web:21d1aa62fc34e82be5b12f',
 }
 
 export const firebaseReady = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
