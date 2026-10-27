@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { PROFILES, FILTERS } from './data.js'
-import { REELS, interleaveFeed, desktopFeedSections } from './reels.js'
+import { interleaveFeed, desktopFeedSections } from './reels.js'
 import ProfileCard from './components/ProfileCard.jsx'
 import ProfilePage from './components/ProfilePage.jsx'
 import ReelCard from './components/ReelCard.jsx'
@@ -8,11 +8,32 @@ import ReelViewer from './components/ReelViewer.jsx'
 import ReelRail from './components/ReelRail.jsx'
 import BottomBar from './components/BottomBar.jsx'
 import Landing from './components/Landing.jsx'
+import AdminApp from './admin/AdminApp.jsx'
+import MemberLogin from './member/MemberLogin.jsx'
 import { useFavorites } from './hooks/useFavorites.js'
 import { useScreenshotGuard } from './hooks/useScreenshotGuard.js'
+import { useRemoteProfiles } from './hooks/useRemoteProfiles.js'
+import { useRemoteReels } from './hooks/useRemoteReels.js'
+import { useAuth } from './auth/AuthContext.jsx'
+import { firebaseReady } from './firebase.js'
+import { currentPath, go, migrateHashRoute } from './nav.js'
+import Chatbot from './chat/Chatbot.jsx'
 
 const PAGE_SIZE = 12
 const MOBILE_MQ = '(max-width: 720px)'
+
+function usePath() {
+  const [path, setPath] = useState(() => {
+    migrateHashRoute()
+    return currentPath()
+  })
+  useEffect(() => {
+    const on = () => setPath(currentPath())
+    window.addEventListener('popstate', on)
+    return () => window.removeEventListener('popstate', on)
+  }, [])
+  return path
+}
 
 function useIsMobile() {
   const [mobile, setMobile] = useState(() => window.matchMedia(MOBILE_MQ).matches)
@@ -28,6 +49,10 @@ function useIsMobile() {
 
 export default function App() {
   // ===== 所有 useState / useRef 必須喺任何 early return 之前 =====
+  const path = usePath()
+  const { user, profile, logout, ready: authReady } = useAuth()
+  const { profiles: remoteProfiles, ready: remoteReady } = useRemoteProfiles()
+  const { reels: remoteReels } = useRemoteReels()
   const [showLanding, setShowLanding] = useState(true)
   const isMobile = useIsMobile()
   const [view, setView] = useState('home')          // home | favorites | member
@@ -46,20 +71,68 @@ export default function App() {
   const returnToIdRef = useRef(null) // 返回主頁時捲去呢張 card
   const pendingReturnId = useRef(null)
 
+  const catalog = useMemo(() => {
+    if (firebaseReady) return remoteProfiles
+    return PROFILES
+  }, [remoteProfiles])
+
+  useEffect(() => {
+    if (!selected) return
+    const fresh = catalog.find(p => p.id === selected.id)
+    if (fresh) setSelected(fresh)
+  }, [catalog])
+
+  const openCatalog = () => {
+    sessionStorage.removeItem('velvet-after-login')
+    setShowLanding(false)
+    setView('home')
+    setSelected(null)
+    window.scrollTo(0, 0)
+  }
+
+  useEffect(() => {
+    if (!user) return
+    if (path.startsWith('/login') || path.startsWith('/admin')) return
+    if (sessionStorage.getItem('velvet-after-login') !== 'men') return
+    openCatalog()
+  }, [user, path])
+
+  useEffect(() => {
+    if (!firebaseReady || !authReady) return
+    if (showLanding || user) return
+    if (path.startsWith('/admin') || path.startsWith('/login')) return
+    setShowLanding(true)
+    setSelected(null)
+    setActiveReel(null)
+    go('/login')
+  }, [user, showLanding, authReady, path])
+
+  const enterMen = () => {
+    if (firebaseReady && !user) {
+      sessionStorage.setItem('velvet-after-login', 'men')
+      go('/login')
+      return
+    }
+    setShowLanding(false)
+    setView('home')
+    window.scrollTo(0, 0)
+  }
+
   // 列表資料（唔係 hook，但放喺 return 之前計算）
   const source = view === 'favorites'
-    ? PROFILES.filter(p => favorites.has(p.id))
-    : (filter === '全部' ? PROFILES : PROFILES.filter(p => p.stats.lifestyle === filter))
+    ? catalog.filter(p => favorites.has(p.id))
+    : (filter === '全部' ? catalog : catalog.filter(p => p.stats?.lifestyle === filter))
   const items = source.slice(0, visibleCount)
   const hasMore = visibleCount < source.length
+  const feedReels = firebaseReady ? remoteReels : []
   const feed = view === 'home' && isMobile
-    ? interleaveFeed(items, REELS, 3)
+    ? interleaveFeed(items, feedReels, 3)
     : items.map(p => ({ kind: 'profile', profile: p, key: p.id }))
   const desktopSections = view === 'home' && !isMobile
-    ? desktopFeedSections(items, REELS, 3)
+    ? desktopFeedSections(items, feedReels, 3)
     : [{ kind: 'profiles', items, key: 'p-all' }]
-  const profileOfReel = (reel) => PROFILES.find(p => p.id === reel.profileId)
-  const openReel = (reel) => setActiveReel(REELS.findIndex(r => r.id === reel.id))
+  const profileOfReel = (reel) => catalog.find(p => p.id === reel?.profileId)
+  const openReel = (reel) => setActiveReel(feedReels.findIndex(r => r.id === reel.id))
 
   // 監聽捲動 — 超過 40px 就收縮大標題（iOS large title 行為）
   useEffect(() => {
@@ -178,12 +251,34 @@ export default function App() {
 
   // ===== early returns（喺所有 hooks 之後）=====
 
+  if (path.startsWith('/admin')) {
+    return <AdminApp />
+  }
+  if (path.startsWith('/login')) {
+    return (
+      <MemberLogin
+        onSuccess={() => {
+          sessionStorage.setItem('velvet-after-login', 'men')
+          openCatalog()
+          go('/')
+        }}
+      />
+    )
+  }
+
   // Landing page — 首次進入時顯示
   if (showLanding) {
     return (
       <>
         {ssBanner}
-        <Landing onEnter={() => { setShowLanding(false); window.scrollTo(0, 0) }} />
+        <Landing
+          onEnter={enterMen}
+          onMemberLogin={() => {
+            sessionStorage.setItem('velvet-after-login', 'men')
+            go('/login')
+          }}
+        />
+        <Chatbot onRegistered={openCatalog} />
       </>
     )
   }
@@ -204,23 +299,40 @@ export default function App() {
         <div className="app-inner app-with-bar">
           <div className="member glass">
             <div className="member-avatar">✦</div>
-            <h2 className="member-name">尊貴會員</h2>
-            <p className="member-sub">VIP · 已加入 365 日</p>
+            <h2 className="member-name">{profile?.userName || user?.email || '尊貴會員'}</h2>
+            <p className="member-sub">{profile?.phone || (user ? '已登入' : '尚未登入')}</p>
             <div className="member-stats">
               <div className="mstat"><b>{favorites.size}</b><small>收藏</small></div>
-              <div className="mstat"><b>{PROFILES.length}</b><small>配對對象</small></div>
+              <div className="mstat"><b>{catalog.length}</b><small>配對對象</small></div>
               <div className="mstat"><b>12</b><small>本月瀏覽</small></div>
             </div>
             <div className="member-menu">
+              {!user && <div className="mitem" onClick={() => go('/login')}>會員登入</div>}
               <div className="mitem">編輯個人檔案</div>
               <div className="mitem">配對偏好</div>
+              <div className="member-sec">設定</div>
               <div className="mitem">通知設定</div>
               <div className="mitem">隱私與安全</div>
               <div className="mitem">升級 Premium</div>
+              {user && (
+                <button
+                  type="button"
+                  className="mitem member-logout"
+                  onClick={async () => {
+                    await logout()
+                    setShowLanding(true)
+                    setView('home')
+                    go('/')
+                  }}
+                >
+                  登出
+                </button>
+              )}
             </div>
           </div>
         </div>
         <BottomBar view={view} onChange={switchView} />
+        <Chatbot lift onRegistered={openCatalog} />
       </div>
     )
   }
@@ -260,12 +372,18 @@ export default function App() {
       )}
 
       <div className="app-inner app-with-bar">
-        {view === 'home' && isMobile && (
-          <ReelRail reels={REELS} profileOf={profileOfReel} onOpen={setActiveReel} />
+        {view === 'home' && isMobile && feedReels.length > 0 && (
+          <ReelRail reels={feedReels} profileOf={profileOfReel} onOpen={setActiveReel} />
         )}
-        {source.length === 0 ? (
+        {firebaseReady && !remoteReady ? (
+          <div className="empty glass">載入配對對象…</div>
+        ) : source.length === 0 ? (
           <div className="empty glass">
-            {view === 'favorites' ? '尚未收藏任何對象 ♡' : '沒有符合的配對對象'}
+            {view === 'favorites'
+              ? '尚未收藏任何對象 ♡'
+              : firebaseReady
+                ? '尚未有配對對象。請到 Admin CMS 建立 profile。'
+                : '沒有符合的配對對象'}
           </div>
         ) : isMobile ? (
           <>
@@ -345,9 +463,10 @@ export default function App() {
       )}
 
       <BottomBar view={view} onChange={switchView} />
+      <Chatbot lift onRegistered={openCatalog} />
       {activeReel !== null && (
         <ReelViewer
-          reels={REELS}
+          reels={feedReels}
           index={activeReel}
           onClose={() => setActiveReel(null)}
           onChange={setActiveReel}

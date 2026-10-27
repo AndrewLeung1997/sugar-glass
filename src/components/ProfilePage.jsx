@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react'
-import { useImageLoaded } from '../hooks/useImageLoaded.js'
 import { getViewerId, watermarkDataUri } from '../hooks/useScreenshotGuard.js'
+import FaceBlurFill from './FaceBlurFill.jsx'
 
 function LuxShot({ src, onOpen, wm }) {
-  const loaded = useImageLoaded(src)
   const block = (e) => { e.preventDefault(); return false }
   return (
     <div
       className="lux-shot"
-      style={{ backgroundImage: loaded ? `url(${src})` : 'none' }}
       onClick={onOpen}
       onContextMenu={block}
       onDragStart={block}
     >
-      {!loaded && <div className="skeleton shimmer" />}
+      <FaceBlurFill src={src} position="center center" />
       <div className="lux-wm" style={{ backgroundImage: wm }} />
     </div>
   )
@@ -22,7 +20,6 @@ function LuxShot({ src, onOpen, wm }) {
 export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, prevProfile, nextProfile, onPrev, onNext }) {
   const [lightbox, setLightbox] = useState(null)
   const [openMore, setOpenMore] = useState(false)
-  const heroLoaded = useImageLoaded(profile.cover)
   const fig = profile.figure || {}
   const fav = isFavorite ? isFavorite(profile.id) : false
   const viewerId = getViewerId()
@@ -59,8 +56,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, 
     <div className="detail-lux">
       {/* 全屏大圖 hero */}
       <section className="lux-hero">
-        <div className="lux-hero-bg" style={{ backgroundImage: heroLoaded ? `url(${profile.cover})` : 'none' }} />
-        {!heroLoaded && <div className="skeleton shimmer" style={{ position: 'absolute', inset: 0 }} />}
+        <FaceBlurFill className="lux-hero-bg" src={profile.cover} position="center 22%" />
         <div className="lux-hero-grad" />
         {profile.verified && <div className="lux-verify">✓ Verified</div>}
         <div className="lux-hero-meta">
@@ -151,7 +147,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, 
             </>
           )}
           <div className="lb-img-wrap" onClick={(e) => e.stopPropagation()} onContextMenu={block} onDragStart={block}>
-            <img src={profile.photos[lightbox]} alt="" draggable={false} />
+            <FaceBlurFill src={profile.photos[lightbox]} position="center center" fit="contain" />
             <div className="lux-wm lb-wm" style={{ backgroundImage: wm }} />
           </div>
           <div className="lb-count">{lightbox + 1} / {profile.photos.length}</div>

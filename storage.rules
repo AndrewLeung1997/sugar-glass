@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'admin@velvet.app'
+        || firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    match /profiles/{id}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 8 * 1024 * 1024;
+    }
+
+    match /reels/{id}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 80 * 1024 * 1024;
+    }
+  }
+}

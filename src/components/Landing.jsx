@@ -1,6 +1,9 @@
 import { LANDING } from '../landingContent.js'
+import { useAuth } from '../auth/AuthContext.jsx'
+import { SESSION_KICK_MSG } from '../auth/session.js'
 
-export default function Landing({ onEnter }) {
+export default function Landing({ onEnter, onMemberLogin }) {
+  const { kicked } = useAuth()
   const { brand, hero, about, stats, features, testimonials, finalCta, footer } = LANDING
 
   return (
@@ -14,6 +17,7 @@ export default function Landing({ onEnter }) {
           <h1 className="lp-hero-title">{hero.title}</h1>
           <p className="lp-hero-subtitle">{hero.subtitle}</p>
           <p className="lp-hero-desc">{hero.description}</p>
+          {kicked && <div className="session-kick">{SESSION_KICK_MSG}</div>}
           <div className="lp-hero-cta">
             <button className="lp-btn primary" onClick={onEnter}>
               <span className="lp-btn-sub">{hero.ctaPrimarySub}</span>
@@ -22,6 +26,9 @@ export default function Landing({ onEnter }) {
             <button className="lp-btn secondary" onClick={onEnter}>
               {hero.ctaSecondary}
               <span className="lp-btn-arrow">→</span>
+            </button>
+            <button className="lp-btn secondary" type="button" onClick={onMemberLogin}>
+              會員登入
             </button>
           </div>
         </div>

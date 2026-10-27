@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useProtectedSrc } from '../hooks/useProtectedSrc.js'
 
 export default function ReelViewer({ reels, index, onClose, onChange, onOpenProfile, profileOf }) {
   const reel = reels[index]
   const profile = profileOf(reel)
+  const src = useProtectedSrc(reel?.src)
+  const poster = useProtectedSrc(reel?.poster)
   const videoRef = useRef(null)
   const startY = useRef(null)
   const [paused, setPaused] = useState(false)
@@ -59,8 +62,8 @@ export default function ReelViewer({ reels, index, onClose, onChange, onOpenProf
       >
         <video
           ref={videoRef}
-          src={reel.src}
-          poster={reel.poster}
+          src={src}
+          poster={poster}
           muted={muted}
           loop
           playsInline

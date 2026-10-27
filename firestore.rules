@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.email == 'admin@velvet.app'
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    match /admins/{id} {
+      allow read: if signedIn() && (request.auth.uid == id || isAdmin());
+      allow create: if signedIn() && request.auth.uid == id;
+      allow update, delete: if isAdmin();
+    }
+
+    match /users/{id} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == id);
+      allow create: if isAdmin() || (signedIn() && request.auth.uid == id);
+      allow delete: if isAdmin();
+      allow update: if isAdmin()
+        || (signedIn() && request.auth.uid == id
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['phoneVerified', 'lastLoginAt', 'inviteCode', 'disabled', 'disabledAt', 'disabledReason'])
+            && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['disabled'])
+              || request.resource.data.disabled == true));
+
+      match /payments/{pid} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    match /usernames/{name} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (signedIn() && request.resource.data.uid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /phones/{e164} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (signedIn() && request.resource.data.uid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /invitationCodes/{code} {
+      allow create: if signedIn();
+      allow get: if signedIn() || isAdmin();
+      allow list, update, delete: if isAdmin();
+    }
+
+    match /supportTickets/{id} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /conversations/{id} {
+      allow create: if true;
+      allow get: if true;
+      allow list, delete: if isAdmin();
+      allow update: if isAdmin()
+        || request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['previewEnc', 'updatedAt', 'messageCount', 'lastRole', 'staffJoined', 'transcriptEnc']);
+
+      match /messages/{mid} {
+        allow create: if true;
+        allow get, list: if true;
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    match /profiles/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /reels/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /authSessions/{uid} {
+      allow read, write: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+  }
+}

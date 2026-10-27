@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import FaceBlurFill from './FaceBlurFill.jsx'
 
 export default function ProfileCard({ profile, onOpen, isFavorite, onToggleFav }) {
   const photos = profile.photos?.length ? profile.photos : [profile.cover]
@@ -55,7 +56,9 @@ export default function ProfileCard({ profile, onOpen, isFavorite, onToggleFav }
       >
         <div className="photo-track" style={{ transform: `translateX(-${idx * 100}%)` }}>
           {photos.map((src, i) => (
-            <img key={i} src={src} alt="" draggable={false} />
+            <div key={i} className="photo-slide">
+              <FaceBlurFill src={src} position="center top" />
+            </div>
           ))}
         </div>
         {multi && (

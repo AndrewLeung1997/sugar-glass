@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { useProtectedSrc } from '../hooks/useProtectedSrc.js'
 
 export default function ReelCard({ reel, profile, onOpen }) {
   const videoRef = useRef(null)
   const [muted, setMuted] = useState(true)
+  const src = useProtectedSrc(reel.src)
+  const poster = useProtectedSrc(reel.poster)
 
   useEffect(() => {
     const el = videoRef.current
@@ -23,8 +26,8 @@ export default function ReelCard({ reel, profile, onOpen }) {
       <div className="reel-media">
         <video
           ref={videoRef}
-          src={reel.src}
-          poster={reel.poster}
+          src={src}
+          poster={poster}
           muted={muted}
           loop
           playsInline
