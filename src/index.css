@@ -978,6 +978,12 @@ body {
 .gate-card label, .admin-panel label {
   display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-soft); letter-spacing: 0.4px;
 }
+.gate-card label.admin-remember {
+  flex-direction: row; align-items: center; gap: 8px; margin: 2px 0 4px;
+}
+.gate-card label.admin-remember input {
+  width: 16px; height: 16px; padding: 0; accent-color: var(--accent);
+}
 .gate-card input, .admin-panel input, .admin-panel textarea, .admin-panel select {
   border: 1px solid var(--border-strong); border-radius: 12px; padding: 11px 12px;
   font: inherit; color: var(--text); background: var(--surface);

@@ -26,8 +26,11 @@ export default function AdminApp() {
   )
   const [page, setPage] = useState('members')
   const [drawer, setDrawer] = useState(false)
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(() => {
+    try { return localStorage.getItem('velvet-admin-email') || '' } catch { return '' }
+  })
   const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(true)
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -44,7 +47,7 @@ export default function AdminApp() {
     setErr('')
     setBusy(true)
     try {
-      await adminSignIn(email, password)
+      await adminSignIn(email, password, { remember })
     } catch (ex) {
       setErr(mapAuthError(ex))
     } finally {
@@ -84,6 +87,10 @@ export default function AdminApp() {
           {user && !allowed && <div className="gate-err">此帳戶沒有 admin 權限。請在 Firestore 建立 admins/{user.uid}</div>}
           <label>Admin Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="username" /></label>
           <label>密碼<input type="password" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" /></label>
+          <label className="admin-remember">
+            <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
+            記住登入（關閉瀏覽器後仍保持登入）
+          </label>
           {err && <div className="gate-err">{err}</div>}
           <button className="lp-btn primary" type="submit" disabled={busy}>{busy ? '登入中…' : '登入'}</button>
           <a className="gate-link" href="/" onClick={e => { e.preventDefault(); goPath('/') }}>返回網站</a>

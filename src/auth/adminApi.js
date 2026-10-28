@@ -1,5 +1,8 @@
 import {
+  browserLocalPersistence,
+  browserSessionPersistence,
   createUserWithEmailAndPassword,
+  setPersistence,
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth'
@@ -25,19 +28,21 @@ import {
   normalizePhone,
   phoneKey,
 } from '../firebase.js'
-import { markLoginPending, rotateAuthSession } from './session.js'
+import { clearLoginPending, markLoginPending } from './session.js'
 import { isUnpaidExpired, trialExpiresAt } from './accountAccess.js'
 
 export function assertFirebase() {
   if (!firebaseReady) throw new Error('尚未設定 Firebase。請先填 .env.local')
 }
 
-export async function adminSignIn(email, password) {
+export async function adminSignIn(email, password, { remember = true } = {}) {
   assertFirebase()
   const auth = getFirebaseAuth()
+  await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence).catch(() => {})
   markLoginPending()
   const cred = await signInWithEmailAndPassword(auth, email.trim(), password)
-  await rotateAuthSession(cred.user.uid).catch(() => {})
+  try { localStorage.setItem('velvet-admin-email', email.trim()) } catch {}
+  clearLoginPending()
   return cred.user
 }
 

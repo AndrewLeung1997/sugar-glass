@@ -84,6 +84,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!user || !firebaseReady) return
+    if (isBootstrapAdmin(user) || isAdmin) return
     const ref = doc(getDb(), 'authSessions', user.uid)
     kicking.current = false
     const unsub = onSnapshot(ref, async (snap) => {
@@ -106,7 +107,7 @@ export function AuthProvider({ children }) {
       if (auth) await signOut(auth).catch(() => {})
     })
     return () => unsub()
-  }, [user])
+  }, [user, isAdmin])
 
   const value = useMemo(() => ({
     user,

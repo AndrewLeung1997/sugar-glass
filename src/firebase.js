@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { browserLocalPersistence, getAuth, setPersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
@@ -42,7 +42,12 @@ function getApp() {
 
 export function getFirebaseAuth() {
   const a = getApp()
-  return a ? getAuth(a) : null
+  if (!a) return null
+  const auth = getAuth(a)
+  if (!auth._velvetLocalPersist) {
+    auth._velvetLocalPersist = setPersistence(auth, browserLocalPersistence).catch(() => {})
+  }
+  return auth
 }
 
 export function getDb() {
