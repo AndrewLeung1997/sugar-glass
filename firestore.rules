@@ -24,7 +24,7 @@ service cloud.firestore {
       allow update: if isAdmin()
         || (signedIn() && request.auth.uid == id
             && request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['phoneVerified', 'lastLoginAt', 'inviteCode', 'disabled', 'disabledAt', 'disabledReason'])
+              .hasOnly(['phoneVerified', 'lastLoginAt', 'inviteCode', 'disabled', 'disabledAt', 'disabledReason', 'favorites'])
             && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['disabled'])
               || request.resource.data.disabled == true));
 

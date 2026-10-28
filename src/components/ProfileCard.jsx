@@ -20,6 +20,7 @@ export default function ProfileCard({ profile, onOpen, isFavorite, onToggleFav }
   }
 
   const onPointerDown = (e) => {
+    if (e.target.closest?.('.fav-btn')) return
     if (e.button != null && e.button !== 0) return
     try { e.currentTarget.setPointerCapture(e.pointerId) } catch {}
     startX.current = e.clientX
@@ -70,9 +71,15 @@ export default function ProfileCard({ profile, onOpen, isFavorite, onToggleFav }
         )}
         {profile.verified && <div className="badge">✓ 已認證</div>}
         <button
+          type="button"
           className={`fav-btn ${fav ? 'active' : ''}`}
-          onClick={(e) => { e.stopPropagation(); onToggleFav(profile.id) }}
-          aria-label="收藏"
+          onPointerDown={(e) => { e.stopPropagation(); e.preventDefault() }}
+          onClick={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            onToggleFav?.(profile.id)
+          }}
+          aria-label={fav ? '取消收藏' : '收藏'}
         >{fav ? '♥' : '♡'}</button>
       </div>
       <div className="info">

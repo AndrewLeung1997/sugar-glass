@@ -112,7 +112,7 @@ export default function ProfilePage({ profile, isFavorite, onToggleFav, onBack, 
       {/* 行動 */}
       <div className="lux-actions">
         <button className="lux-btn filled">發送邀請</button>
-        <button className={`lux-btn outline ${fav ? 'fav' : ''}`} onClick={() => onToggleFav(profile.id)}>
+        <button type="button" className={`lux-btn outline ${fav ? 'fav' : ''}`} onClick={() => onToggleFav?.(profile.id)}>
           {fav ? '♥ 已收藏' : '♡ 收藏'}
         </button>
       </div>
