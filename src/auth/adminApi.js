@@ -337,7 +337,7 @@ async function urlToFile(url, name) {
 }
 
 export async function importBackviewProfiles(onProgress) {
-  return importLocalProfiles(onProgress, (p) => /^p(9[7-9]|10[0-8])$/.test(p.id))
+  return importLocalProfiles(onProgress, (p) => /^p(9[7-9]|10[0-9]|11[0-1])$/.test(p.id))
 }
 
 export async function importLocalProfiles(onProgress, only) {

@@ -26,9 +26,12 @@ function seed(id) {
   return [...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0)
 }
 
-const IDS = ['p97', 'p98', 'p99', 'p100', 'p101', 'p102', 'p103', 'p104', 'p105', 'p106', 'p107', 'p108']
+const IDS = ['p109', 'p110', 'p111']
 
 const META = {
+  p109: { name: 'Nagisa', age: 25, city: '深水灣', occupation: '遊艇會會員', tagline: '碼頭與旗幟', bio: '週末常在遊艇會，最愛泊岸之後那一陣海風。相信陽光同甲板就夠。期待一段也願意出海、不怕曬的人。', tags: ['遊艇會', '碼頭', '海', '陽光', '旅行'], verified: true, lifestyle: '頂級' },
+  p110: { name: 'Kanade', age: 27, city: '粉嶺', occupation: '高爾夫球手', tagline: '球道與午後', bio: '在粉嶺球會練習四年，最愛一桿過樹的安靜。相信草地比說話誠實。尋找一個也懂節奏、不急於成績的人。', tags: ['高爾夫', '球會', '草地', '午後', '紅茶'], verified: true, lifestyle: '奢華' },
+  p111: { name: 'Yuiha', age: 22, city: '薄扶林', occupation: '大學生', tagline: '校園與單車', bio: '在大學讀比較文學，最愛圖書館石階同樹蔭。下課踩單車穿過中庭。期待一段一起安靜走校園的人。', tags: ['校園', '大學', '閱讀', '單車', '咖啡'], verified: false, lifestyle: '文青' },
   p97: { name: 'Hikari', age: 24, city: '淺水灣', occupation: '遊艇模特', tagline: '海風與甲板', bio: '週末常在南區遊艇拍攝，最愛黃昏甲板的風。相信海平面是最好的對話。期待一段也願意出海、不怕曬的人。', tags: ['遊艇', '海', '攝影', '黃昏', '旅行'], verified: true, lifestyle: '奢華' },
   p98: { name: 'Kohana', age: 27, city: '沙田', occupation: '馬場禮賓', tagline: '晨霧與草地', bio: '在沙田馬場做禮賓三年，最愛清晨草地未開賽的安靜。相信等待也是一種優雅。尋找一個也懂節奏、不急於掌聲的人。', tags: ['馬場', '賽馬', '清晨', '禮賓', '紅茶'], verified: true, lifestyle: '頂級' },
   p99: { name: 'Airi', age: 23, city: '西九', occupation: '芭蕾舞者', tagline: '把杆與鏡光', bio: '專業芭蕾舞者，排練室的把杆是我的日常。身體比語言誠實。期待一段細膩、彼此尊重節奏的關係。', tags: ['芭蕾', '舞蹈', '古典樂', '美術', '巴黎'], verified: true, lifestyle: '高端' },
