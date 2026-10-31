@@ -5,9 +5,11 @@ const cache = new Map()
 
 export function storagePathFromUrl(src) {
   if (!src) return ''
-  if (!/^https?:\/\//i.test(src)) return String(src).replace(/^\//, '')
+  const raw = String(src)
+  if (raw.startsWith('blob:') || raw.startsWith('data:') || raw.startsWith('/')) return ''
+  if (!/^https?:\/\//i.test(raw)) return ''
   try {
-    const u = new URL(src)
+    const u = new URL(raw)
     const marker = '/o/'
     const i = u.pathname.indexOf(marker)
     if (i < 0) return ''

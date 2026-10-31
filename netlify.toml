@@ -5,8 +5,9 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# SPA fallback — 所有路由都返 index.html
+# 已存在嘅 /p109.jpg 等靜態檔會先被 complement；其餘路由返 SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
